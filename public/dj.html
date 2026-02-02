@@ -4,187 +4,11 @@
   <meta charset="utf-8" />
   <title>STARCUP JUKEBOX LIVE — Console DJ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-
-  <style>
-    @import url("https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;800;900&display=swap");
-
-    :root{
-      --pink:#FC1978;
-      --blue:#79EBFB;
-      --violet:#8D20C6;
-      --violetDark:#590D7D;
-      --dark:#210D41;
-      --cream:#FBD3AE;
-
-      --text: rgba(255,255,255,.95);
-      --muted: rgba(251,211,174,.85);
-
-      --border: rgba(121,235,251,.22);
-      --glass: rgba(33,13,65,.60);
-      --glass2: rgba(33,13,65,.38);
-      --shadow: 0 22px 70px rgba(0,0,0,.45);
-    }
-
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: Raleway, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(900px 520px at 12% 0%, rgba(121,235,251,.18), transparent 60%),
-        radial-gradient(900px 520px at 88% 8%, rgba(252,25,120,.18), transparent 60%),
-        radial-gradient(1100px 700px at 50% 120%, rgba(141,32,198,.22), transparent 55%),
-        linear-gradient(180deg, var(--dark), #07050f);
-      min-height:100vh;
-      padding:22px;
-    }
-
-    .wrap{max-width:980px;margin:0 auto}
-    .brandTop{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-end;
-      gap:16px;
-      flex-wrap:wrap;
-      margin-bottom:14px;
-    }
-    .brandTitle{
-      font-weight:900;
-      letter-spacing:.8px;
-      color:var(--blue);
-      font-size:22px;
-      line-height:1.1;
-      text-transform:uppercase;
-    }
-    .brandSub{
-      margin-top:6px;
-      color:var(--muted);
-      font-weight:800;
-      font-size:14px;
-      line-height:1.35;
-    }
-    .hint{
-      color:rgba(255,255,255,.70);
-      font-weight:700;
-      font-size:13px;
-      max-width:520px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:1.2fr .8fr;
-      gap:16px;
-      margin-top:10px
-    }
-    @media(max-width:900px){.grid{grid-template-columns:1fr}}
-
-    .card{
-      background:linear-gradient(180deg, var(--glass), var(--glass2));
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:16px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(10px);
-    }
-
-    .label{color:var(--muted);font-size:13px;margin-bottom:8px;font-weight:900}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-
-    input{
-      padding:12px;
-      border-radius:12px;
-      border:1px solid rgba(121,235,251,.25);
-      background:rgba(0,0,0,.20);
-      color:var(--text);
-      outline:none;
-      font-size:16px;
-      min-width:170px;
-      text-transform:uppercase;
-      letter-spacing:.6px;
-      font-weight:900;
-    }
-
-    .btn{
-      border:1px solid rgba(121,235,251,.22);
-      background:rgba(255,255,255,.06);
-      color:var(--text);
-      padding:12px 14px;
-      border-radius:12px;
-      font-size:15px;
-      font-weight:900;
-      cursor:pointer;
-      transition:transform .12s ease, background .12s ease, box-shadow .12s ease, opacity .12s ease;
-      user-select:none;
-    }
-    .btn:hover{background:rgba(255,255,255,.10)}
-    .btn:active{transform:scale(.99)}
-    .btn:disabled{opacity:.45; cursor:not-allowed}
-
-    .btn.primary{
-      border-color: rgba(121,235,251,.35);
-      background: linear-gradient(90deg, var(--blue), var(--pink));
-      color:#140a21; /* texte foncé demandé */
-      box-shadow: 0 18px 60px rgba(121,235,251,.14);
-    }
-
-    .btn.openVote{
-      border-color: rgba(252,25,120,.40);
-      background: rgba(252,25,120,.14);
-    }
-
-    .btn.validate{
-      border-color: rgba(121,235,251,.40);
-      background: rgba(121,235,251,.12);
-    }
-
-    pre{
-      margin:0;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-      font-size:12px;
-      color:rgba(255,255,255,.82);
-      background:rgba(0,0,0,.30);
-      padding:10px;
-      border-radius:14px;
-      border:1px solid rgba(121,235,251,.18);
-      white-space:pre-wrap;
-      min-height:84px;
-    }
-
-    .qr{
-      width:240px;
-      height:240px;
-      background:#fff;
-      border-radius:16px;
-      padding:10px;
-      border:1px solid rgba(121,235,251,.35);
-      display:block;
-    }
-
-    a{
-      color:rgba(255,255,255,.95);
-      text-decoration:none;
-      border-bottom:1px dashed rgba(251,211,174,.35);
-      word-break:break-all;
-      font-weight:800;
-    }
-
-    .miniBrand{
-      margin-top:14px;
-      padding:12px;
-      border-radius:14px;
-      border:1px solid rgba(121,235,251,.18);
-      background: rgba(0,0,0,.18);
-      color: rgba(251,211,174,.86);
-      font-weight:800;
-      line-height:1.35;
-    }
-    .miniBrand b{color:var(--blue)}
-  </style>
+  <link rel="stylesheet" href="/styles.css" />
 </head>
-
 <body>
   <div class="wrap">
-    <div class="brandTop">
+    <div class="topbar">
       <div>
         <div class="brandTitle">STARCUP JUKEBOX LIVE</div>
         <div class="brandSub">Console DJ • faites voter le public pour le prochain titre</div>
@@ -210,9 +34,7 @@
         <div class="label" style="margin-top:14px;">Logs</div>
         <pre id="out">Prêt.</pre>
 
-        <div class="miniBrand">
-          ⭐ <b>Expérience Starcup</b> — vote en direct + projection instantanée des résultats.
-        </div>
+        <div style="margin-top:14px" class="pill">⭐ Expérience Starcup — projection live des résultats</div>
       </div>
 
       <div class="card">
@@ -243,10 +65,7 @@
   const btnCloseVote = document.getElementById("closeVote");
 
   function log(msg){ out.textContent = msg; }
-
-  function codeValue(){
-    return String(roomInput.value || "").trim().toUpperCase();
-  }
+  function codeValue(){ return String(roomInput.value || "").trim().toUpperCase(); }
 
   function refreshQr(){
     const code = codeValue();
@@ -263,8 +82,6 @@
     const url = `${location.origin}/vote.html?room=${encodeURIComponent(code)}`;
     voteLink.textContent = url;
     voteLink.href = url;
-
-    // Cache-bust pour éviter les QR figés
     qrImg.src = `/api/room/${encodeURIComponent(code)}/qr?ts=${Date.now()}`;
 
     btnProjector.disabled = false;
@@ -277,7 +94,7 @@
     const r = await fetch(url, { method: "POST" });
     const text = await r.text();
     let data = null;
-    try { data = text ? JSON.parse(text) : null; } catch (_) {}
+    try { data = text ? JSON.parse(text) : null; } catch(_) {}
     return { ok: r.ok, status: r.status, data, text };
   }
 
@@ -352,7 +169,6 @@
       if (w) log(`🏆 Vote VALIDÉ — gagnant : ${w.title} — ${w.artist}`);
       else log("🏁 Vote VALIDÉ — aucun gagnant");
 
-      // Après validation, on ré-autorise l’ouverture d’un nouveau vote
       btnOpenVote.disabled = false;
     }catch(e){
       console.error(e);
@@ -361,7 +177,6 @@
     }
   });
 
-  // Initialisation
   refreshQr();
 </script>
 </body>
