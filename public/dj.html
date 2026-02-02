@@ -2,10 +2,11 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Starcup Jukebox Live — Console DJ</title>
+  <title>STARCUP JUKEBOX LIVE — Console DJ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;800;900&display=swap');
+    @import url("https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;800;900&display=swap");
 
     :root{
       --pink:#FC1978;
@@ -16,7 +17,7 @@
       --cream:#FBD3AE;
 
       --text: rgba(255,255,255,.95);
-      --muted: rgba(251,211,174,.82);
+      --muted: rgba(251,211,174,.85);
 
       --border: rgba(121,235,251,.22);
       --glass: rgba(33,13,65,.60);
@@ -53,12 +54,14 @@
       color:var(--blue);
       font-size:22px;
       line-height:1.1;
+      text-transform:uppercase;
     }
     .brandSub{
       margin-top:6px;
       color:var(--muted);
-      font-weight:700;
+      font-weight:800;
       font-size:14px;
+      line-height:1.35;
     }
     .hint{
       color:rgba(255,255,255,.70);
@@ -84,7 +87,7 @@
       backdrop-filter:blur(10px);
     }
 
-    .label{color:var(--muted);font-size:13px;margin-bottom:8px;font-weight:800}
+    .label{color:var(--muted);font-size:13px;margin-bottom:8px;font-weight:900}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 
     input{
@@ -95,7 +98,10 @@
       color:var(--text);
       outline:none;
       font-size:16px;
-      min-width:170px
+      min-width:170px;
+      text-transform:uppercase;
+      letter-spacing:.6px;
+      font-weight:900;
     }
 
     .btn{
@@ -107,15 +113,17 @@
       font-size:15px;
       font-weight:900;
       cursor:pointer;
-      transition:transform .12s ease, background .12s ease, box-shadow .12s ease;
+      transition:transform .12s ease, background .12s ease, box-shadow .12s ease, opacity .12s ease;
+      user-select:none;
     }
     .btn:hover{background:rgba(255,255,255,.10)}
     .btn:active{transform:scale(.99)}
+    .btn:disabled{opacity:.45; cursor:not-allowed}
 
     .btn.primary{
       border-color: rgba(121,235,251,.35);
       background: linear-gradient(90deg, var(--blue), var(--pink));
-      color:#12081f;
+      color:#140a21; /* texte foncé demandé */
       box-shadow: 0 18px 60px rgba(121,235,251,.14);
     }
 
@@ -133,12 +141,13 @@
       margin:0;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size:12px;
-      color:rgba(255,255,255,.80);
+      color:rgba(255,255,255,.82);
       background:rgba(0,0,0,.30);
       padding:10px;
       border-radius:14px;
       border:1px solid rgba(121,235,251,.18);
-      white-space:pre-wrap
+      white-space:pre-wrap;
+      min-height:84px;
     }
 
     .qr{
@@ -147,14 +156,16 @@
       background:#fff;
       border-radius:16px;
       padding:10px;
-      border:1px solid rgba(121,235,251,.35)
+      border:1px solid rgba(121,235,251,.35);
+      display:block;
     }
 
     a{
       color:rgba(255,255,255,.95);
       text-decoration:none;
       border-bottom:1px dashed rgba(251,211,174,.35);
-      word-break:break-all
+      word-break:break-all;
+      font-weight:800;
     }
 
     .miniBrand{
@@ -170,6 +181,7 @@
     .miniBrand b{color:var(--blue)}
   </style>
 </head>
+
 <body>
   <div class="wrap">
     <div class="brandTop">
@@ -177,7 +189,7 @@
         <div class="brandTitle">STARCUP JUKEBOX LIVE</div>
         <div class="brandSub">Console DJ • faites voter le public pour le prochain titre</div>
       </div>
-      <div class="hint">Astuce : ouvre l’écran vidéoprojecteur, puis le public scanne le QR pour voter.</div>
+      <div class="hint">Étapes : 1) Créer une session • 2) Ouvrir l’écran • 3) Ouvrir un vote</div>
     </div>
 
     <div class="grid">
@@ -185,22 +197,21 @@
         <div class="label">Session</div>
         <div class="row">
           <button class="btn primary" id="create">Créer une session</button>
-          <input id="room" placeholder="ex: ABC123" />
-          <button class="btn" id="openProjector">Ouvrir écran vidéoprojecteur</button>
+          <input id="room" placeholder="CODE" />
+          <button class="btn" id="openProjector" disabled>Ouvrir écran vidéoprojecteur</button>
         </div>
 
         <div class="label" style="margin-top:14px;">Contrôle du vote</div>
         <div class="row">
-          <button class="btn openVote" id="openVote">Ouvrir un vote (4 choix)</button>
-          <button class="btn validate" id="closeVote">Fermer + valider</button>
+          <button class="btn openVote" id="openVote" disabled>Ouvrir un vote (4 choix)</button>
+          <button class="btn validate" id="closeVote" disabled>Fermer + valider</button>
         </div>
 
         <div class="label" style="margin-top:14px;">Logs</div>
         <pre id="out">Prêt.</pre>
 
         <div class="miniBrand">
-          ⭐ <b>Starcup</b> = quiz & blindtests interactifs + modules live (vote, scores, équipes).
-          <br/>Ce module “Jukebox Live” sert de démo en bar/événementiel.
+          ⭐ <b>Expérience Starcup</b> — vote en direct + projection instantanée des résultats.
         </div>
       </div>
 
@@ -210,9 +221,9 @@
           <img class="qr" id="qr" alt="QR" />
           <div style="min-width:220px">
             <div class="label">Lien vote</div>
-            <a id="voteLink" href="#" target="_blank">—</a>
+            <a id="voteLink" href="#" target="_blank" rel="noopener">—</a>
             <div class="brandSub" style="margin-top:10px;">
-              Le public vote via le QR. L’écran vidéoprojecteur affiche QR + barres en live.
+              Le public vote via le QR. L’écran affiche QR + barres en live.
             </div>
           </div>
         </div>
@@ -226,34 +237,132 @@
   const qrImg = document.getElementById("qr");
   const voteLink = document.getElementById("voteLink");
 
+  const btnCreate = document.getElementById("create");
+  const btnProjector = document.getElementById("openProjector");
+  const btnOpenVote = document.getElementById("openVote");
+  const btnCloseVote = document.getElementById("closeVote");
+
   function log(msg){ out.textContent = msg; }
 
-  function refreshQr(){
-    const code = roomInput.value.trim().toUpperCase();
-    if (!code) return;
-    const url = `${location.origin}/vote.html?room=${code}`;
-    voteLink.textContent = url;
-    voteLink.href = url;
-    qrImg.src = `/api/room/${code}/qr?ts=${Date.now()}`;
+  function codeValue(){
+    return String(roomInput.value || "").trim().toUpperCase();
   }
 
-  document.getElementById("create").onclick = async () => {
-    try{
-      const r = await fetch("/api/room/create", { method: "POST" });
-      const data = await r.json();
-      roomInput.value = data.roomCode;
-      refreshQr();
-      log("✅ Session créée : " + data.roomCode);
-    }catch(e){
-      console.error(e);
-      log("❌ Erreur création session (voir console)");
+  function refreshQr(){
+    const code = codeValue();
+    if (!code) {
+      voteLink.textContent = "—";
+      voteLink.href = "#";
+      qrImg.removeAttribute("src");
+      btnProjector.disabled = true;
+      btnOpenVote.disabled = true;
+      btnCloseVote.disabled = true;
+      return;
     }
-  };
+
+    const url = `${location.origin}/vote.html?room=${encodeURIComponent(code)}`;
+    voteLink.textContent = url;
+    voteLink.href = url;
+
+    // Cache-bust pour éviter les QR figés
+    qrImg.src = `/api/room/${encodeURIComponent(code)}/qr?ts=${Date.now()}`;
+
+    btnProjector.disabled = false;
+    btnOpenVote.disabled = false;
+  }
 
   roomInput.addEventListener("input", refreshQr);
 
-  // Ouvre UNIQUEMENT l'écran vidéoprojecteur (le public passe par le QR)
-  document.getElementById("openProjector").onclick = () => {
-    const code = roomInput.value.trim().toUpperCase();
+  async function postJson(url){
+    const r = await fetch(url, { method: "POST" });
+    const text = await r.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch (_) {}
+    return { ok: r.ok, status: r.status, data, text };
+  }
+
+  btnCreate.addEventListener("click", async () => {
+    btnCreate.disabled = true;
+    log("Création de la session…");
+    try{
+      const res = await postJson("/api/room/create");
+      if (!res.ok || !res.data || !res.data.roomCode) {
+        log(`❌ Erreur /api/room/create (status ${res.status})\n${res.text || ""}`);
+        return;
+      }
+      roomInput.value = res.data.roomCode;
+      refreshQr();
+      btnCloseVote.disabled = true;
+      log(`✅ Session créée : ${res.data.roomCode}`);
+    }catch(e){
+      console.error(e);
+      log("❌ Erreur réseau (voir console)");
+    }finally{
+      btnCreate.disabled = false;
+    }
+  });
+
+  btnProjector.addEventListener("click", () => {
+    const code = codeValue();
     if (!code) return log("❌ Mets un code session");
-    window.open(`${location
+    window.open(`/screen.html?room=${encodeURIComponent(code)}`, "_blank", "noopener");
+    refreshQr();
+    log("📽️ Écran vidéoprojecteur ouvert.");
+  });
+
+  btnOpenVote.addEventListener("click", async () => {
+    const code = codeValue();
+    if (!code) return log("❌ Mets un code session");
+
+    btnOpenVote.disabled = true;
+    btnCloseVote.disabled = true;
+    log("Ouverture du vote…");
+
+    try{
+      const res = await postJson(`/api/room/${encodeURIComponent(code)}/open-vote`);
+      if (!res.ok) {
+        log(`❌ Erreur open-vote (status ${res.status})\n${res.text || ""}`);
+        btnOpenVote.disabled = false;
+        return;
+      }
+      btnCloseVote.disabled = false;
+      log("🗳️ Vote OUVERT (4 choix générés).");
+    }catch(e){
+      console.error(e);
+      log("❌ Erreur réseau (voir console)");
+      btnOpenVote.disabled = false;
+    }
+  });
+
+  btnCloseVote.addEventListener("click", async () => {
+    const code = codeValue();
+    if (!code) return log("❌ Mets un code session");
+
+    btnCloseVote.disabled = true;
+    log("Fermeture + validation…");
+
+    try{
+      const res = await postJson(`/api/room/${encodeURIComponent(code)}/close-vote`);
+      if (!res.ok) {
+        log(`❌ Erreur close-vote (status ${res.status})\n${res.text || ""}`);
+        btnCloseVote.disabled = false;
+        return;
+      }
+      const w = res.data && res.data.winner ? res.data.winner : null;
+      if (w) log(`🏆 Vote VALIDÉ — gagnant : ${w.title} — ${w.artist}`);
+      else log("🏁 Vote VALIDÉ — aucun gagnant");
+
+      // Après validation, on ré-autorise l’ouverture d’un nouveau vote
+      btnOpenVote.disabled = false;
+    }catch(e){
+      console.error(e);
+      log("❌ Erreur réseau (voir console)");
+      btnCloseVote.disabled = false;
+    }
+  });
+
+  // Initialisation
+  refreshQr();
+</script>
+</body>
+</html>
