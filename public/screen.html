@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Starcup Live Vote — Écran</title>
+  <title>Starcup Jukebox Live — Écran</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;800;900&display=swap');
@@ -216,15 +216,15 @@
 <body>
   <div class="top">
     <div>
-      <div class="brandTitle">STARCUP LIVE VOTE</div>
-      <div class="brandSub">L’animation interactive en temps réel</div>
+      <div class="brandTitle">STARCUP JUKEBOX LIVE</div>
+      <div class="brandSub">L’animation musicale interactive en temps réel</div>
       <div class="room" id="room"></div>
     </div>
 
     <div class="qrWrap">
       <img class="qr" id="qr" alt="QR code" />
       <div>
-        <div class="scan">Scannez pour voter</div>
+        <div class="scan">Scannez pour choisir le prochain titre</div>
         <div class="url" id="voteUrl"></div>
       </div>
     </div>
@@ -253,7 +253,7 @@
       qrImg.src = `/api/room/${roomCode}/qr?ts=${Date.now()}`;
     }
 
-    const socket = io();
+    const socket = io({ transports: ["websocket"] });
     socket.emit("join", { roomCode });
 
     socket.on("round_update", (state) => {
