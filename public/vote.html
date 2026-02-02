@@ -151,4 +151,45 @@
         blurActiveSoon();
       });
 
-      choicesEl.appendChild(
+      choicesEl.appendChild(btn);
+    }
+
+    blurActiveSoon();
+  }
+
+  socket.on("connect", () => {
+    if (!roomCode) return;
+    socket.emit("join", { roomCode });
+  });
+
+  socket.on("round_update", (state) => {
+    currentRoundId = state.roundId;
+    voteOpen = !!state.voteOpen;
+    lastWinner = state.lastWinner || null;
+
+    if (voteOpen) {
+      subtitle.textContent = "Vote en cours — appuie sur ton choix";
+      if (!selectedTrackId) setInfo("Choisis maintenant 👇");
+    } else {
+      subtitle.textContent = lastWinner ? "Vote terminé — gagnant validé" : "Aucun vote en cours";
+      if (lastWinner) setInfo(`🏆 Gagnant : ${lastWinner.title} — ${lastWinner.artist}`);
+      else setInfo("Attends le prochain vote…");
+    }
+
+    // Si nouveau round, on garde le selectedTrackId (permet changer) mais ça reste valide seulement si track existe
+    const ids = new Set((state.suggestions || []).map(t => t.id));
+    if (selectedTrackId && !ids.has(selectedTrackId)) selectedTrackId = null;
+
+    renderChoices(state.suggestions || []);
+  });
+
+  socket.on("validated", ({ winner }) => {
+    if (winner) {
+      setInfo(`🏆 Gagnant : ${winner.title} — ${winner.artist}`);
+    }
+  });
+
+  blurActiveSoon();
+</script>
+</body>
+</html>
