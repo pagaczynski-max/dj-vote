@@ -7,29 +7,21 @@ const path = require("path");
 const QRCode = require("qrcode");
 
 const app = express();
-
-// Utile derrière un proxy (Render / HTTPS)
 app.set("trust proxy", 1);
-
 app.use(express.json());
 
-// Server + Socket.IO
 const server = http.createServer(app);
+
+// Websocket-only (Render friendly)
 const io = new Server(server, { transports: ["websocket"] });
 
-// Static files
 app.use(express.static("public"));
-app.get("/", (req, res) => {
-  res.redirect("/dj.html");
-});
-
+app.get("/", (req, res) => res.redirect("/dj.html"));
 
 // ---------------- CSV ----------------
 function loadTracksFromCsv() {
   const filePath = path.join(__dirname, "tracks.csv");
-  if (!fs.existsSync(filePath)) {
-    throw new Error("tracks.csv introuvable à la racine du projet.");
-  }
+  if (!fs.existsSync(filePath)) throw new Error("tracks.csv introuvable à la racine.");
 
   const raw = fs.readFileSync(filePath, "utf8");
   const lines = raw
@@ -55,14 +47,10 @@ function loadTracksFromCsv() {
     const title = cols[idx.title] || "";
     const artist = cols[idx.artist] || "";
     if (!title || !artist) continue;
-
     out.push({ id: "t" + i, title, artist });
   }
 
-  if (out.length < 4) {
-    throw new Error("Il faut au moins 4 titres valides dans tracks.csv.");
-  }
-
+  if (out.length < 4) throw new Error("Il faut au moins 4 titres valides dans tracks.csv.");
   return out;
 }
 
@@ -74,7 +62,7 @@ const rooms = new Map();
 /**
 room = {
   roomCode,
-  voteOpen: false,
+  voteOpen: boolean,
   suggestions: [track],
   votes: {trackId: number},
   voters: Map(voterId -> trackId),
@@ -85,7 +73,6 @@ room = {
 */
 
 function pick4(room) {
-  // Évite les 5 derniers gagnants (simple et efficace)
   const banned = new Set((room?.history || []).slice(-5));
   const pool = tracks.filter((t) => !banned.has(t.id));
   const base = pool.length >= 4 ? pool : tracks;
@@ -119,23 +106,18 @@ function publicState(room) {
   };
 }
 
-// URL de base (utile en prod + pour corriger localhost)
 function getBaseUrl(req) {
-  // Si tu déploies et/ou mets un domaine: BASE_URL="https://tondomaine.com"
   if (process.env.BASE_URL) return process.env.BASE_URL.replace(/\/$/, "");
   return `${req.protocol}://${req.get("host")}`;
 }
 
 // ---------------- API DJ ----------------
-
-// Créer une room
 app.post("/api/room/create", (req, res) => {
   const roomCode = nanoid(6).toUpperCase();
   getRoom(roomCode);
   res.json({ roomCode });
 });
 
-// Ouvrir un vote: génère 4 choix + reset votes
 app.post("/api/room/:code/open-vote", (req, res) => {
   const roomCode = req.params.code.toUpperCase();
   const room = getRoom(roomCode);
@@ -150,14 +132,12 @@ app.post("/api/room/:code/open-vote", (req, res) => {
   res.json({ ok: true });
 });
 
-// Fermer + valider: calc gagnant, ferme vote, garde lastWinner
 app.post("/api/room/:code/close-vote", (req, res) => {
   const roomCode = req.params.code.toUpperCase();
   const room = getRoom(roomCode);
 
   room.voteOpen = false;
 
-  // Déterminer le gagnant (max votes, sinon premier)
   let winner = room.suggestions[0] || null;
   let best = -1;
 
@@ -180,7 +160,7 @@ app.post("/api/room/:code/close-vote", (req, res) => {
   res.json({ winner: room.lastWinner || null });
 });
 
-// Mettre "aucun vote en cours" (sans effacer le dernier gagnant)
+// (Endpoint conservé, mais pas utilisé en UI)
 app.post("/api/room/:code/reset", (req, res) => {
   const roomCode = req.params.code.toUpperCase();
   const room = getRoom(roomCode);
@@ -195,7 +175,6 @@ app.post("/api/room/:code/reset", (req, res) => {
   res.json({ ok: true });
 });
 
-// QR code PNG: vote.html?room=CODE
 app.get("/api/room/:code/qr", async (req, res) => {
   try {
     const roomCode = req.params.code.toUpperCase();
@@ -230,21 +209,16 @@ io.on("connection", (socket) => {
     if (room.roundId !== roundId) return;
     if (!voterId) return;
 
-    // Security/consistency: only allow voting for current suggestions
-    const allowed = new Set((room.suggestions || []).map(t => t.id));
+    const allowed = new Set((room.suggestions || []).map((t) => t.id));
     if (!allowed.has(trackId)) return;
 
-    const prev = room.voters.get(voterId); // undefined if first vote
-
-    // If user taps same choice again, do nothing
+    const prev = room.voters.get(voterId);
     if (prev === trackId) return;
 
-    // If changing vote, decrement previous choice
     if (prev && allowed.has(prev)) {
       room.votes[prev] = Math.max(0, (room.votes[prev] || 0) - 1);
     }
 
-    // Record new choice
     room.voters.set(voterId, trackId);
     room.votes[trackId] = (room.votes[trackId] || 0) + 1;
 
@@ -254,9 +228,6 @@ io.on("connection", (socket) => {
 
 // ---------------- Start ----------------
 const PORT = process.env.PORT || 3000;
-
-// En prod (Render), 0.0.0.0 est important
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Serveur lancé sur le port ${PORT}`);
 });
-
