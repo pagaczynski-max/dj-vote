@@ -1,0 +1,191 @@
+@import url("https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;800;900&display=swap");
+
+:root{
+  --pink:#FC1978;
+  --blue:#79EBFB;
+  --violet:#8D20C6;
+  --violetDark:#590D7D;
+  --dark:#210D41;
+  --cream:#FBD3AE;
+
+  --text: rgba(255,255,255,.95);
+  --muted: rgba(251,211,174,.85);
+
+  --border: rgba(121,235,251,.22);
+  --glass: rgba(33,13,65,.60);
+  --glass2: rgba(33,13,65,.38);
+  --shadow: 0 22px 70px rgba(0,0,0,.45);
+}
+
+*{ box-sizing:border-box; }
+
+html, body { height:100%; }
+
+body{
+  margin:0;
+  font-family: Raleway, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(900px 520px at 12% 0%, rgba(121,235,251,.18), transparent 60%),
+    radial-gradient(900px 520px at 88% 8%, rgba(252,25,120,.18), transparent 60%),
+    radial-gradient(1100px 700px at 50% 120%, rgba(141,32,198,.22), transparent 55%),
+    linear-gradient(180deg, var(--dark), #07050f);
+  min-height:100vh;
+  padding:22px;
+}
+
+.wrap{ max-width:1040px; margin:0 auto; }
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:16px;
+  flex-wrap:wrap;
+  margin-bottom:14px;
+}
+
+.brandTitle{
+  font-weight:900;
+  letter-spacing:.8px;
+  color:var(--blue);
+  font-size:22px;
+  line-height:1.1;
+  text-transform:uppercase;
+}
+.brandSub{
+  margin-top:6px;
+  color:var(--muted);
+  font-weight:800;
+  font-size:14px;
+  line-height:1.35;
+}
+.hint{
+  color:rgba(255,255,255,.70);
+  font-weight:700;
+  font-size:13px;
+  max-width:520px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  gap:16px;
+  margin-top:10px
+}
+@media(max-width:900px){ .grid{ grid-template-columns:1fr } }
+
+.card{
+  background:linear-gradient(180deg, var(--glass), var(--glass2));
+  border:1px solid var(--border);
+  border-radius:18px;
+  padding:16px;
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(10px);
+}
+
+.label{ color:var(--muted); font-size:13px; margin-bottom:8px; font-weight:900; }
+.row{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+input{
+  padding:12px;
+  border-radius:12px;
+  border:1px solid rgba(121,235,251,.25);
+  background:rgba(0,0,0,.20);
+  color:var(--text);
+  outline:none;
+  font-size:16px;
+  min-width:170px;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  font-weight:900;
+}
+
+.btn{
+  border:0;
+  border-radius:14px;
+  padding:12px 16px;
+  font-weight:900;
+  letter-spacing:.2px;
+  cursor:pointer;
+  transition:transform .12s ease, filter .12s ease, box-shadow .12s ease, opacity .12s ease;
+  user-select:none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+  background:rgba(255,255,255,.08);
+  color:var(--text);
+}
+.btn:hover{ filter:brightness(1.04) saturate(1.05); }
+.btn:active{ transform: translateY(1px) scale(.99); }
+.btn:disabled{ opacity:.45; cursor:not-allowed; }
+
+.btn.primary{
+  color:#12081f;
+  background: linear-gradient(90deg, var(--blue) 0%, var(--pink) 100%);
+  box-shadow:
+    0 16px 45px rgba(121,235,251,.18),
+    0 10px 28px rgba(252,25,120,.14);
+}
+
+.btn.openVote{
+  border:1px solid rgba(252,25,120,.35);
+  background: rgba(252,25,120,.14);
+}
+.btn.validate{
+  border:1px solid rgba(121,235,251,.32);
+  background: rgba(121,235,251,.12);
+}
+
+pre{
+  margin:0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size:12px;
+  color:rgba(255,255,255,.82);
+  background:rgba(0,0,0,.30);
+  padding:10px;
+  border-radius:14px;
+  border:1px solid rgba(121,235,251,.18);
+  white-space:pre-wrap;
+  min-height:84px;
+}
+
+a{
+  color:rgba(255,255,255,.95);
+  text-decoration:none;
+  border-bottom:1px dashed rgba(251,211,174,.35);
+  word-break:break-all;
+  font-weight:800;
+}
+
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(121,235,251,.20);
+  background: rgba(0,0,0,.18);
+  color: rgba(251,211,174,.86);
+  font-weight:800;
+}
+
+.qr{
+  width:240px;
+  height:240px;
+  background:#fff;
+  border-radius:16px;
+  padding:10px;
+  border:1px solid rgba(121,235,251,.35);
+  display:block;
+}
+
+/* Anti “choix encadré” (focus ring navigateur) */
+button, [role="button"], a {
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus { outline: none; }
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(121,235,251,.35);
+}
