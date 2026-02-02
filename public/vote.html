@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Starcup Live Vote — Vote</title>
+  <title>Starcup Jukebox Live — Vote</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;800;900&display=swap');
@@ -63,6 +63,9 @@
     }
     .btn:hover{background:rgba(255,255,255,.06)}
     .btn:active{transform:scale(.99)}
+    .btn:focus{outline:none}
+    .btn:focus-visible{outline:3px solid rgba(121,235,251,.55); outline-offset:2px}
+
 
     .title{font-size:18px;font-weight:900;line-height:1.2}
     .artist{margin-top:4px;color:var(--muted);font-size:14px;font-weight:800}
@@ -100,8 +103,8 @@
 </head>
 <body>
   <div class="wrap">
-    <div class="toast" id="toast">✅ Merci pour ton vote — Starcup Live Vote</div>
-    <h1>Vote pour le prochain son</h1>
+    <div class="toast" id="toast">✅ Vote enregistré — Starcup Jukebox Live</div>
+    <h1>Choisis le prochain titre</h1>
     <div class="info" id="info"></div>
 
     <div class="panel">
@@ -128,7 +131,7 @@
       localStorage.setItem("voterId", voterId);
     }
 
-    const socket = io();
+    const socket = io({ transports: ["websocket"] });
     let currentRoundId = null;
     let selectedTrackId = null;
 
@@ -191,6 +194,7 @@
           b.style.background = "rgba(252,25,120,.16)";
 
           showToast();
+          b.blur();
         };
 
         content.appendChild(b);
