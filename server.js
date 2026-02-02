@@ -19,6 +19,10 @@ const io = new Server(server);
 
 // Static files
 app.use(express.static("public"));
+app.get("/", (req, res) => {
+  res.redirect("/dj.html");
+});
+
 
 // ---------------- CSV ----------------
 function loadTracksFromCsv() {
@@ -241,3 +245,4 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`✅ Serveur lancé sur le port ${PORT}`);
 });
+
