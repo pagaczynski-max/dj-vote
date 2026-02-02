@@ -2,325 +2,274 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Starcup Jukebox Live — Écran</title>
+  <title>STARCUP JUKEBOX LIVE — Écran</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/client.js"></script>
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;800;900&display=swap');
-
-    :root{
-      --pink:#FC1978;
-      --blue:#79EBFB;
-      --violet:#8D20C6;
-      --violetDark:#590D7D;
-      --dark:#210D41;
-      --cream:#FBD3AE;
-
-      --text: rgba(255,255,255,.95);
-      --muted: rgba(251,211,174,.82);
-
-      --border: rgba(121,235,251,.22);
-      --glass: rgba(33,13,65,.55);
-      --glass2: rgba(33,13,65,.35);
-      --shadow: 0 26px 80px rgba(0,0,0,.55);
-    }
-
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family: Raleway, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(900px 520px at 12% 0%, rgba(121,235,251,.18), transparent 60%),
-        radial-gradient(900px 520px at 88% 8%, rgba(252,25,120,.18), transparent 60%),
-        radial-gradient(1100px 700px at 50% 120%, rgba(141,32,198,.22), transparent 55%),
-        linear-gradient(180deg, var(--dark), #07050f);
-      min-height:100vh;
-      padding:32px;
-    }
-
-    .top{
-      display:flex;
-      justify-content:space-between;
-      gap:18px;
-      align-items:flex-start;
-      flex-wrap:wrap
-    }
-
-    .brandTitle{
-      font-weight:900;
-      letter-spacing:1px;
-      color:var(--blue);
-      font-size:26px;
-      line-height:1.1;
-    }
-    .brandSub{
-      margin-top:8px;
-      color:var(--muted);
-      font-weight:800;
-      font-size:18px;
-    }
-
-    .room{
-      margin-top:10px;
-      color:rgba(255,255,255,.75);
-      font-size:16px;
-      font-weight:800
-    }
-
-    .qrWrap{
-      display:flex;
-      gap:16px;
-      align-items:center;
-      background: linear-gradient(180deg, var(--glass), var(--glass2));
-      border:1px solid var(--border);
-      border-radius:22px;
-      padding:14px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(10px);
-    }
-
-    .qr{
-      width:220px;
-      height:220px;
-      background:#fff;
-      border-radius:18px;
-      padding:10px;
-      border:1px solid rgba(121,235,251,.35)
-    }
-
-    .scan{
-      font-size:20px;
-      font-weight:900;
-      margin-bottom:6px;
-      color: rgba(255,255,255,.95);
-    }
-
-    .url{
-      font-size:16px;
-      color:rgba(251,211,174,.85);
-      word-break:break-all;
-      max-width:520px;
-      font-weight:700
-    }
-
-    .powered{
-      margin-top:18px;
-      color:rgba(251,211,174,.90);
-      font-weight:800;
-      letter-spacing:.3px;
-      font-size:18px;
-    }
-
-    .grid{
+    .screenGrid{
       display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:22px;
-      margin-top:18px;
+      grid-template-columns: 360px 1fr;
+      gap:16px;
+      align-items:start;
     }
+    @media(max-width:980px){ .screenGrid{ grid-template-columns:1fr } }
 
-    .card{
-      background: linear-gradient(180deg, var(--glass), var(--glass2));
-      border:1px solid var(--border);
-      border-radius:22px;
-      padding:22px;
-      box-shadow:var(--shadow);
-      backdrop-filter:blur(10px);
-      min-height:190px;
-      position:relative;
-      outline: 0px solid transparent;
-      transition: outline .15s ease, transform .15s ease, box-shadow .15s ease;
-    }
-
-    .card.leader{
-      outline: 4px solid rgba(252,25,120,.65);
-      box-shadow: 0 0 0 1px rgba(252,25,120,.30), 0 18px 80px rgba(252,25,120,.18);
-      transform: translateY(-2px);
-    }
-
-    .title{
+    .bigTitle{
       font-size:34px;
       font-weight:900;
-      line-height:1.05;
-      margin:0 0 8px
+      letter-spacing:.6px;
+      margin:0;
+      text-transform:uppercase;
+      color: var(--blue);
     }
-
-    .artist{
-      font-size:18px;
-      color:var(--muted);
+    .bigSub{
+      margin-top:8px;
+      margin-bottom:0;
+      color: var(--muted);
       font-weight:800;
-      margin-bottom:16px
     }
 
-    .bar{
-      height:14px;
-      border-radius:999px;
-      background:rgba(255,255,255,.10);
+    .status{
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
       border:1px solid rgba(121,235,251,.18);
+      background: rgba(0,0,0,.18);
+      font-weight:900;
+      color: rgba(255,255,255,.88);
+    }
+
+    .bars { display:flex; flex-direction:column; gap:12px; margin-top:10px; }
+
+    .barRow{
+      border:1px solid rgba(121,235,251,.18);
+      background: rgba(0,0,0,.18);
+      border-radius:16px;
+      padding:12px;
+      position:relative;
       overflow:hidden;
+    }
+    .barRow.leader{
+      border-color: rgba(252,25,120,.40);
+      box-shadow: 0 18px 60px rgba(252,25,120,.12);
+    }
+
+    .barTop{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:baseline;
+      position:relative;
+      z-index:2;
+    }
+
+    .trackName{
+      font-weight:900;
+      font-size:18px;
+    }
+    .trackArtist{
+      font-weight:800;
+      font-size:13px;
+      color: rgba(251,211,174,.85);
+      margin-top:4px;
+    }
+    .count{
+      font-weight:900;
+      color: rgba(255,255,255,.92);
+      white-space:nowrap;
     }
 
     .fill{
-      height:100%;
+      position:absolute;
+      left:0; top:0; bottom:0;
       width:0%;
-      background: linear-gradient(90deg, var(--blue), var(--pink));
-      border-radius:999px;
-      transition:width .25s ease;
+      background: linear-gradient(90deg, rgba(121,235,251,.22), rgba(252,25,120,.22));
+      z-index:1;
+      transition: width .18s ease;
     }
 
-    .count{
-      margin-top:10px;
-      font-size:16px;
-      color:rgba(255,255,255,.88);
-      font-weight:900
+    .winnerBox{
+      margin-top:12px;
+      border-radius:18px;
+      padding:14px;
+      border:1px solid rgba(121,235,251,.26);
+      background: linear-gradient(180deg, rgba(121,235,251,.10), rgba(252,25,120,.08));
     }
-
-    .winnerPill{
-      margin-top:20px;
-      display:inline-block;
-      padding:14px 20px;
-      border-radius:999px;
-      background: linear-gradient(90deg, var(--blue), var(--pink));
-      color:#12081f;
-      font-size:30px;
+    .winnerTitle{
       font-weight:900;
-      box-shadow: 0 26px 80px rgba(121,235,251,.16);
+      font-size:16px;
+      color: rgba(255,255,255,.92);
     }
-
-    .muted{
-      margin-top:16px;
-      color:var(--muted);
-      font-size:18px;
+    .winnerName{
+      margin-top:6px;
+      font-weight:900;
+      font-size:22px;
+    }
+    .footerBrand{
+      margin-top:14px;
+      text-align:right;
+      color: rgba(255,255,255,.50);
       font-weight:800;
-    }
-
-    .bigEmpty{
-      margin-top:18px;
-      padding: 22px;
-      border-radius: 22px;
-      border: 1px solid rgba(121,235,251,.18);
-      background: rgba(0,0,0,.20);
-      color: rgba(251,211,174,.85);
-      font-size: 26px;
-      font-weight: 900;
-      text-align: center;
-    }
-
-    @media(max-width:1050px){
-      .grid{grid-template-columns:1fr}
-      .qr{width:200px;height:200px}
-      .title{font-size:30px}
-      .brandSub{font-size:16px}
+      font-size:12px;
     }
   </style>
 </head>
+
 <body>
-  <div class="top">
-    <div>
-      <div class="brandTitle">STARCUP JUKEBOX LIVE</div>
-      <div class="brandSub">L’animation musicale interactive en temps réel</div>
-      <div class="room" id="room"></div>
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <div class="brandTitle">STARCUP JUKEBOX LIVE</div>
+        <div class="brandSub">L’animation musicale interactive en temps réel</div>
+      </div>
+      <div class="hint" id="roomBadge">Room —</div>
     </div>
 
-    <div class="qrWrap">
-      <img class="qr" id="qr" alt="QR code" />
-      <div>
-        <div class="scan">Scannez pour choisir le prochain titre</div>
-        <div class="url" id="voteUrl"></div>
+    <div class="screenGrid">
+      <div class="card">
+        <div class="label">Scannez pour voter</div>
+        <img class="qr" id="qr" alt="QR public" />
+        <div class="status" id="status">Connexion…</div>
+
+        <div class="winnerBox" id="winnerBox" style="display:none;">
+          <div class="winnerTitle">🏆 Gagnant validé</div>
+          <div class="winnerName" id="winnerName"></div>
+        </div>
+
+        <div class="footerBrand">propulsé par Starcup</div>
+      </div>
+
+      <div class="card">
+        <div class="label">Résultats en direct</div>
+        <div class="pill" id="votesCount">0 votes en direct</div>
+        <div class="bars" id="bars"></div>
       </div>
     </div>
   </div>
 
-  <div id="winnerWrap"></div>
-  <div id="main"></div>
+<script>
+  const roomCode = (qs("room") || "").toUpperCase();
+  const roomBadge = document.getElementById("roomBadge");
+  const qrImg = document.getElementById("qr");
+  const statusEl = document.getElementById("status");
+  const barsEl = document.getElementById("bars");
+  const votesCountEl = document.getElementById("votesCount");
+  const winnerBox = document.getElementById("winnerBox");
+  const winnerName = document.getElementById("winnerName");
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const params = new URLSearchParams(location.search);
-    const roomCode = (params.get("room") || "").toUpperCase();
+  if (!roomCode) {
+    statusEl.textContent = "❌ Room manquante. Ouvre screen.html?room=CODE";
+  } else {
+    roomBadge.textContent = "Room " + roomCode;
+    qrImg.src = `/api/room/${encodeURIComponent(roomCode)}/qr?ts=${Date.now()}`;
+  }
 
-    const roomEl = document.getElementById("room");
-    const qrImg = document.getElementById("qr");
-    const voteUrlEl = document.getElementById("voteUrl");
-    const main = document.getElementById("main");
-    const winnerWrap = document.getElementById("winnerWrap");
+  const socket = io({ transports: ["websocket"] });
 
-    if (!roomCode) {
-      roomEl.textContent = "❌ Room manquante (?room=ABC123)";
+  let lastState = null;
+
+  function render(state) {
+    lastState = state;
+
+    const total = sumVotes(state.votes);
+    votesCountEl.textContent = `${total} vote${total>1?"s":""} en direct`;
+
+    const hasVote = !!state.voteOpen;
+    const hasSuggestions = Array.isArray(state.suggestions) && state.suggestions.length > 0;
+
+    if (!hasVote) {
+      statusEl.textContent = hasSuggestions ? "Vote terminé" : "Aucun vote en cours";
     } else {
-      roomEl.textContent = "Room : " + roomCode;
-      const voteUrl = `${location.origin}/vote.html?room=${roomCode}`;
-      voteUrlEl.textContent = voteUrl;
-      qrImg.src = `/api/room/${roomCode}/qr?ts=${Date.now()}`;
+      statusEl.textContent = "Vote en cours";
     }
 
-    const socket = io({ transports: ["websocket"] });
+    const lead = leaderId(state.suggestions, state.votes);
+
+    barsEl.innerHTML = "";
+    if (!hasSuggestions) {
+      const empty = document.createElement("div");
+      empty.className = "status";
+      empty.textContent = "En attente d’un vote…";
+      barsEl.appendChild(empty);
+      return;
+    }
+
+    // Max pour calcul barres (si 0 votes -> 1 pour éviter division 0)
+    let max = 1;
+    for (const t of state.suggestions) max = Math.max(max, state.votes[t.id] || 0);
+
+    for (const t of state.suggestions) {
+      const c = state.votes[t.id] || 0;
+      const pct = Math.round((c / max) * 100);
+
+      const row = document.createElement("div");
+      row.className = "barRow" + (t.id === lead && total > 0 ? " leader" : "");
+
+      const fill = document.createElement("div");
+      fill.className = "fill";
+      fill.style.width = `${pct}%`;
+      row.appendChild(fill);
+
+      const top = document.createElement("div");
+      top.className = "barTop";
+
+      const left = document.createElement("div");
+      const name = document.createElement("div");
+      name.className = "trackName";
+      name.textContent = t.title;
+
+      const artist = document.createElement("div");
+      artist.className = "trackArtist";
+      artist.textContent = t.artist;
+
+      left.appendChild(name);
+      left.appendChild(artist);
+
+      const right = document.createElement("div");
+      right.className = "count";
+      right.textContent = `${c}`;
+
+      top.appendChild(left);
+      top.appendChild(right);
+
+      row.appendChild(top);
+      barsEl.appendChild(row);
+    }
+
+    // Dé-focalise tout (évite un encadré “random”)
+    blurActiveSoon();
+  }
+
+  socket.on("connect", () => {
+    if (!roomCode) return;
     socket.emit("join", { roomCode });
+  });
 
-    socket.on("round_update", (state) => {
-      // Dernier gagnant validé
-      winnerWrap.innerHTML = "";
-      if (state.lastWinner) {
-        const w = document.createElement("div");
-        w.className = "winnerPill";
-        w.textContent = `🏆 Gagnant validé : ${state.lastWinner.title} — ${state.lastWinner.artist}`;
-        winnerWrap.appendChild(w);
-      } else {
-        const m = document.createElement("div");
-        m.className = "muted";
-        m.textContent = "Aucun gagnant validé pour l’instant.";
-        winnerWrap.appendChild(m);
-      }
+  socket.on("round_update", (state) => {
+    render(state);
 
-      // Vote fermé
-      if (!state.voteOpen) {
-        main.innerHTML = `<div class="bigEmpty">Aucun vote en cours…<div style="margin-top:10px;font-size:18px;font-weight:800;color:rgba(251,211,174,.85)">Scannez le QR pour rejoindre la session</div></div>`;
-        return;
-      }
-
-      const suggestions = state.suggestions || [];
-      const counts = suggestions.map(t => state.votes[t.id] || 0);
-      const max = Math.max(1, ...counts);
-
-      // leader
-      let leaderId = null;
-      let best = -1;
-      for (const t of suggestions) {
-        const c = state.votes[t.id] || 0;
-        if (c > best) { best = c; leaderId = t.id; }
-      }
-
-      const powered = document.createElement("div");
-      powered.className = "powered";
-      powered.textContent = "Vote en direct • propulsé par Starcup";
-
-      const grid = document.createElement("div");
-      grid.className = "grid";
-
-      for (const t of suggestions) {
-        const count = state.votes[t.id] || 0;
-        const pct = Math.round((count / max) * 100);
-
-        const card = document.createElement("div");
-        card.className = "card" + (t.id === leaderId ? " leader" : "");
-        card.innerHTML = `
-          <div class="title">${escapeHtml(t.title)}</div>
-          <div class="artist">${escapeHtml(t.artist)}</div>
-          <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
-          <div class="count">Votes : ${count}</div>
-        `;
-        grid.appendChild(card);
-      }
-
-      main.innerHTML = "";
-      main.appendChild(powered);
-      main.appendChild(grid);
-    });
-
-    function escapeHtml(s){
-      return String(s).replace(/[&<>"']/g, c => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-      }[c]));
+    // Gagnant visible seulement si vote fermé ET lastWinner présent
+    if (!state.voteOpen && state.lastWinner) {
+      winnerBox.style.display = "block";
+      winnerName.textContent = `${state.lastWinner.title} — ${state.lastWinner.artist}`;
+    } else {
+      winnerBox.style.display = "none";
+      winnerName.textContent = "";
     }
-  </script>
+  });
+
+  socket.on("validated", ({ winner }) => {
+    if (winner) {
+      winnerBox.style.display = "block";
+      winnerName.textContent = `${winner.title} — ${winner.artist}`;
+    }
+  });
+
+  // Cas “aucun vote en cours” au premier chargement
+  blurActiveSoon();
+</script>
 </body>
 </html>
