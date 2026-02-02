@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>DJ Console</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+    :root{
+      --bg0:#06070a; --bg1:#0b1020;
+      --card:rgba(255,255,255,.06); --card2:rgba(255,255,255,.09);
+      --border:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.92); --muted:rgba(255,255,255,.65);
+      --brand1:#ffb703; --brand2:#fb8500;
+      --ok:#22c55e; --warn:#fb8500;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background: radial-gradient(900px 500px at 15% 0%, rgba(251,133,0,.22), transparent 55%),
+                  radial-gradient(900px 500px at 85% 0%, rgba(59,130,246,.18), transparent 55%),
+                  linear-gradient(180deg, var(--bg1), var(--bg0));
+      min-height:100vh; padding:22px;
+    }
+    .wrap{max-width:980px;margin:0 auto}
+    h1{margin:0;font-size:34px;font-weight:900;letter-spacing:.4px}
+    .sub{margin-top:6px;color:var(--muted);font-size:14px}
+    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-top:16px}
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+    .card{
+      background:linear-gradient(180deg,var(--card2),var(--card));
+      border:1px solid var(--border);
+      border-radius:18px; padding:16px;
+      box-shadow:0 20px 50px rgba(0,0,0,.35); backdrop-filter:blur(10px);
+    }
+    .label{color:var(--muted);font-size:13px;margin-bottom:8px}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    input{
+      padding:12px;border-radius:12px;border:1px solid var(--border);
+      background:rgba(0,0,0,.25);color:var(--text);outline:none;font-size:16px;min-width:170px
+    }
+    .btn{
+      border:1px solid var(--border);background:rgba(255,255,255,.06);
+      color:var(--text);padding:12px 14px;border-radius:12px;
+      font-size:15px;font-weight:900;cursor:pointer;transition:transform .12s ease,background .12s ease
+    }
+    .btn:hover{background:rgba(255,255,255,.10)}
+    .btn:active{transform:scale(.99)}
+    .btn.primary{border-color:rgba(255,183,3,.35);background:linear-gradient(135deg,var(--brand1),var(--brand2));color:#0a0a0a}
+    .btn.warn{border-color:rgba(251,133,0,.35);background:rgba(251,133,0,.14)}
+    .btn.ok{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.14)}
+    pre{
+      margin:0;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+      font-size:12px;color:rgba(255,255,255,.78);
+      background:rgba(0,0,0,.35);padding:10px;border-radius:14px;border:1px solid rgba(255,255,255,.10);
+      white-space:pre-wrap
+    }
+    .qr{
+      width:240px;height:240px;background:#fff;border-radius:16px;padding:10px;border:1px solid rgba(255,255,255,.22)
+    }
+    a{color:rgba(255,255,255,.92);text-decoration:none;border-bottom:1px dashed rgba(255,255,255,.25);word-break:break-all}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>DJ Console</h1>
+    <div class="sub">Créer une session, projeter l’écran, ouvrir/fermer les votes, valider le gagnant.</div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="label">Session</div>
+        <div class="row">
+          <button class="btn primary" id="create">Créer une session</button>
+          <input id="room" placeholder="ex: ABC123" />
+          <button class="btn" id="openWindows">Ouvrir Vote + Écran</button>
+        </div>
+
+        <div class="label" style="margin-top:14px;">Contrôle du vote</div>
+        <div class="row">
+          <button class="btn warn" id="openVote">Ouvrir un vote (4 choix)</button>
+          <button class="btn ok" id="closeVote">Fermer + valider</button>
+          <button class="btn" id="reset">Aucun vote en cours</button>
+        </div>
+
+        <div class="label" style="margin-top:14px;">Logs</div>
+        <pre id="out">Prêt.</pre>
+      </div>
+
+      <div class="card">
+        <div class="label">QR code public</div>
+        <div class="row">
+          <img class="qr" id="qr" alt="QR" />
+          <div style="min-width:220px">
+            <div class="label">Lien vote</div>
+            <a id="voteLink" href="#" target="_blank">—</a>
+            <div class="sub" style="margin-top:10px;">Projette <b>screen.html</b> au vidéoprojecteur : QR + barres en live.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const out = document.getElementById("out");
+  const roomInput = document.getElementById("room");
+  const qrImg = document.getElementById("qr");
+  const voteLink = document.getElementById("voteLink");
+
+  function log(msg){ out.textContent = msg; }
+
+  function refreshQr(){
+    const code = roomInput.value.trim().toUpperCase();
+    if (!code) return;
+    const url = `${location.origin}/vote.html?room=${code}`;
+    voteLink.textContent = url;
+    voteLink.href = url;
+    qrImg.src = `/api/room/${code}/qr?ts=${Date.now()}`;
+  }
+
+  document.getElementById("create").onclick = async () => {
+    const r = await fetch("/api/room/create", { method: "POST" });
+    const data = await r.json();
+    roomInput.value = data.roomCode;
+    refreshQr();
+    log("✅ Session créée : " + data.roomCode);
+  };
+
+  roomInput.addEventListener("input", refreshQr);
+
+  document.getElementById("openWindows").onclick = () => {
+    const code = roomInput.value.trim().toUpperCase();
+    if (!code) return log("❌ Mets un code session");
+    window.open(`${location.origin}/vote.html?room=${code}`, "_blank");
+    window.open(`${location.origin}/screen.html?room=${code}`, "_blank");
+    refreshQr();
+    log("🔗 Fenêtres ouvertes (Vote + Écran)");
+  };
+
+  document.getElementById("openVote").onclick = async () => {
+    const code = roomInput.value.trim().toUpperCase();
+    if (!code) return log("❌ Mets un code session");
+    await fetch(`/api/room/${code}/open-vote`, { method: "POST" });
+    log("🗳️ Vote OUVERT (4 choix générés)");
+  };
+
+  document.getElementById("closeVote").onclick = async () => {
+    const code = roomInput.value.trim().toUpperCase();
+    if (!code) return log("❌ Mets un code session");
+    const r = await fetch(`/api/room/${code}/close-vote`, { method: "POST" });
+    const data = await r.json();
+    if (data.winner) log("🏆 Vote FERMÉ — gagnant : " + data.winner.title + " — " + data.winner.artist);
+    else log("🏁 Vote FERMÉ — aucun gagnant (pas de vote)");
+  };
+
+  document.getElementById("reset").onclick = async () => {
+    const code = roomInput.value.trim().toUpperCase();
+    if (!code) return log("❌ Mets un code session");
+    await fetch(`/api/room/${code}/reset`, { method: "POST" });
+    log("⏸️ Aucun vote en cours");
+  };
+</script>
+</body>
+</html>

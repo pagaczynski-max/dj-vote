@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Écran vote</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;900&display=swap');
+    :root{
+      --bg0:#05060a; --bg1:#0a1022;
+      --card:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.14);
+      --text:rgba(255,255,255,.95); --muted:rgba(255,255,255,.65);
+      --brand1:#ffb703; --brand2:#fb8500;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--text);
+      background: radial-gradient(1100px 600px at 20% 0%, rgba(251,133,0,.18), transparent 55%),
+                  radial-gradient(900px 500px at 85% 10%, rgba(59,130,246,.16), transparent 55%),
+                  linear-gradient(180deg, var(--bg1), var(--bg0));
+      min-height:100vh;padding:32px;
+    }
+    .top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;flex-wrap:wrap}
+    h1{margin:0;font-size:56px;font-weight:900;letter-spacing:.6px}
+    .room{margin-top:8px;color:var(--muted);font-size:18px;font-weight:800}
+    .qrWrap{
+      display:flex;gap:16px;align-items:center;
+      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+      border:1px solid var(--border);
+      border-radius:22px;padding:14px;
+      box-shadow:0 24px 60px rgba(0,0,0,.35);
+      backdrop-filter:blur(10px);
+    }
+    .qr{width:220px;height:220px;background:#fff;border-radius:18px;padding:10px}
+    .scan{font-size:20px;font-weight:900;margin-bottom:6px}
+    .url{font-size:16px;color:rgba(255,255,255,.82);word-break:break-all;max-width:520px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:30px}
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+      border:1px solid var(--border);
+      border-radius:22px;padding:22px;
+      box-shadow:0 26px 70px rgba(0,0,0,.35);
+      backdrop-filter:blur(10px);
+      min-height:190px;
+      position:relative;
+      outline: 0px solid transparent;
+      transition: outline .15s ease, transform .15s ease;
+    }
+    .card.leader{
+      outline: 4px solid rgba(255,183,3,.55);
+      transform: translateY(-2px);
+    }
+    .title{font-size:34px;font-weight:900;line-height:1.05;margin:0 0 8px}
+    .artist{font-size:18px;color:var(--muted);font-weight:800;margin-bottom:16px}
+    .bar{height:14px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.12);overflow:hidden}
+    .fill{height:100%;width:0%;background:linear-gradient(135deg,var(--brand1),var(--brand2));border-radius:999px;transition:width .25s ease}
+    .count{margin-top:10px;font-size:16px;color:rgba(255,255,255,.86);font-weight:900}
+    .winner{
+      margin-top:22px;display:inline-block;padding:16px 22px;border-radius:999px;
+      background:linear-gradient(135deg,var(--brand1),var(--brand2));color:#0a0a0a;
+      font-size:34px;font-weight:900;box-shadow:0 26px 70px rgba(251,133,0,.28);
+    }
+    .muted{margin-top:16px;color:var(--muted);font-size:18px;font-weight:800}
+    .bigEmpty{
+      margin-top:30px;
+      padding: 22px;
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,.20);
+      color: var(--muted);
+      font-size: 26px;
+      font-weight: 900;
+      text-align: center;
+    }
+    @media(max-width:1050px){
+      h1{font-size:44px}
+      .grid{grid-template-columns:1fr}
+      .qr{width:200px;height:200px}
+      .title{font-size:30px}
+    }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div>
+      <h1>Vote du public</h1>
+      <div class="room" id="room"></div>
+    </div>
+    <div class="qrWrap">
+      <img class="qr" id="qr" alt="QR code" />
+      <div>
+        <div class="scan">Scannez pour voter</div>
+        <div class="url" id="voteUrl"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="main"></div>
+  <div id="winnerWrap"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const roomCode = (params.get("room") || "").toUpperCase();
+
+    const roomEl = document.getElementById("room");
+    const qrImg = document.getElementById("qr");
+    const voteUrlEl = document.getElementById("voteUrl");
+    const main = document.getElementById("main");
+    const winnerWrap = document.getElementById("winnerWrap");
+
+    if (!roomCode) {
+      roomEl.textContent = "❌ Room manquante (?room=ABC123)";
+    } else {
+      roomEl.textContent = "Room : " + roomCode;
+      const voteUrl = `${location.origin}/vote.html?room=${roomCode}`;
+      voteUrlEl.textContent = voteUrl;
+      qrImg.src = `/api/room/${roomCode}/qr?ts=${Date.now()}`;
+    }
+
+    const socket = io();
+    socket.emit("join", { roomCode });
+
+    socket.on("round_update", (state) => {
+      // Winner
+      winnerWrap.innerHTML = "";
+      if (state.lastWinner) {
+        const w = document.createElement("div");
+        w.className = "winner";
+        w.textContent = `🏆 Dernier gagnant : ${state.lastWinner.title} — ${state.lastWinner.artist}`;
+        winnerWrap.appendChild(w);
+      } else {
+        const m = document.createElement("div");
+        m.className = "muted";
+        m.textContent = "Pas encore de gagnant validé.";
+        winnerWrap.appendChild(m);
+      }
+
+      // Vote ouvert / fermé
+      if (!state.voteOpen) {
+        main.innerHTML = `<div class="bigEmpty">Aucun vote en cours…</div>`;
+        return;
+      }
+
+      const suggestions = state.suggestions || [];
+      const counts = suggestions.map(t => state.votes[t.id] || 0);
+      const max = Math.max(1, ...counts);
+
+      // leader = celui qui a le max
+      let leaderId = null;
+      let best = -1;
+      for (const t of suggestions) {
+        const c = state.votes[t.id] || 0;
+        if (c > best) { best = c; leaderId = t.id; }
+      }
+
+      const grid = document.createElement("div");
+      grid.className = "grid";
+
+      for (const t of suggestions) {
+        const count = state.votes[t.id] || 0;
+        const pct = Math.round((count / max) * 100);
+
+        const card = document.createElement("div");
+        card.className = "card" + (t.id === leaderId ? " leader" : "");
+        card.innerHTML = `
+          <div class="title">${escapeHtml(t.title)}</div>
+          <div class="artist">${escapeHtml(t.artist)}</div>
+          <div class="bar"><div class="fill" style="width:${pct}%"></div></div>
+          <div class="count">Votes : ${count}</div>
+        `;
+        grid.appendChild(card);
+      }
+
+      main.innerHTML = "";
+      main.appendChild(grid);
+    });
+
+    socket.on("validated", ({ winner }) => {
+      // Rien de spécial ici: le round_update qui suit gère l’affichage.
+    });
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, c => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+      }[c]));
+    }
+  </script>
+</body>
+</html>
