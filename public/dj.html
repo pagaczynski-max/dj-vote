@@ -103,10 +103,10 @@
   </div>
 
 <script>
-  const out = document.getElementById("out");
-  const roomInput = document.getElementById("room");
-  const qrImg = document.getElementById("qr");
-  const voteLink = document.getElementById("voteLink");
+  const out = .getElementById("out");
+  const roomInput = .getElementById("room");
+  const qrImg = .getElementById("qr");
+  const voteLink = .getElementById("voteLink");
 
   function log(msg){ out.textContent = msg; }
 
@@ -129,14 +129,17 @@
 
   roomInput.addEventListener("input", refreshQr);
 
-  document.getElementById("openWindows").onclick = () => {
-    const code = roomInput.value.trim().toUpperCase();
-    if (!code) return log("❌ Mets un code session");
-    window.open(`${location.origin}/vote.html?room=${code}`, "_blank");
-    window.open(`${location.origin}/screen.html?room=${code}`, "_blank");
-    refreshQr();
-    log("🔗 Fenêtres ouvertes (Vote + Écran)");
-  };
+document.getElementById("openWindows").onclick = () => {
+  const code = roomInput.value.trim().toUpperCase();
+  if (!code) return log("❌ Mets un code session");
+
+  // On n'ouvre QUE l'écran vidéoprojecteur.
+  // Le public ira sur vote.html via le QR.
+  window.open(`${location.origin}/screen.html?room=${code}`, "_blank");
+
+  refreshQr();
+  log("📽️ Écran vidéoprojecteur ouvert (le public scanne le QR)");
+};
 
   document.getElementById("openVote").onclick = async () => {
     const code = roomInput.value.trim().toUpperCase();
@@ -163,3 +166,4 @@
 </script>
 </body>
 </html>
+
