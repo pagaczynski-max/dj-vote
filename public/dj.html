@@ -2,71 +2,188 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>DJ Console</title>
+  <title>Starcup Live Vote — Console DJ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;800;900&display=swap');
+
     :root{
-      --bg0:#06070a; --bg1:#0b1020;
-      --card:rgba(255,255,255,.06); --card2:rgba(255,255,255,.09);
-      --border:rgba(255,255,255,.12);
-      --text:rgba(255,255,255,.92); --muted:rgba(255,255,255,.65);
-      --brand1:#ffb703; --brand2:#fb8500;
-      --ok:#22c55e; --warn:#fb8500;
+      --pink:#FC1978;
+      --blue:#79EBFB;
+      --violet:#8D20C6;
+      --violetDark:#590D7D;
+      --dark:#210D41;
+      --cream:#FBD3AE;
+
+      --text: rgba(255,255,255,.95);
+      --muted: rgba(251,211,174,.82);
+
+      --border: rgba(121,235,251,.22);
+      --glass: rgba(33,13,65,.60);
+      --glass2: rgba(33,13,65,.38);
+      --shadow: 0 22px 70px rgba(0,0,0,.45);
     }
+
     *{box-sizing:border-box}
     body{
-      margin:0; font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      margin:0;
+      font-family: Raleway, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:var(--text);
-      background: radial-gradient(900px 500px at 15% 0%, rgba(251,133,0,.22), transparent 55%),
-                  radial-gradient(900px 500px at 85% 0%, rgba(59,130,246,.18), transparent 55%),
-                  linear-gradient(180deg, var(--bg1), var(--bg0));
-      min-height:100vh; padding:22px;
+      background:
+        radial-gradient(900px 520px at 12% 0%, rgba(121,235,251,.18), transparent 60%),
+        radial-gradient(900px 520px at 88% 8%, rgba(252,25,120,.18), transparent 60%),
+        radial-gradient(1100px 700px at 50% 120%, rgba(141,32,198,.22), transparent 55%),
+        linear-gradient(180deg, var(--dark), #07050f);
+      min-height:100vh;
+      padding:22px;
     }
+
     .wrap{max-width:980px;margin:0 auto}
-    h1{margin:0;font-size:34px;font-weight:900;letter-spacing:.4px}
-    .sub{margin-top:6px;color:var(--muted);font-size:14px}
-    .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-top:16px}
+    .brandTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .brandTitle{
+      font-weight:900;
+      letter-spacing:.8px;
+      color:var(--blue);
+      font-size:22px;
+      line-height:1.1;
+    }
+    .brandSub{
+      margin-top:6px;
+      color:var(--muted);
+      font-weight:700;
+      font-size:14px;
+    }
+    .hint{
+      color:rgba(255,255,255,.70);
+      font-weight:700;
+      font-size:13px;
+      max-width:420px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:16px;
+      margin-top:10px
+    }
     @media(max-width:900px){.grid{grid-template-columns:1fr}}
+
     .card{
-      background:linear-gradient(180deg,var(--card2),var(--card));
+      background:linear-gradient(180deg, var(--glass), var(--glass2));
       border:1px solid var(--border);
-      border-radius:18px; padding:16px;
-      box-shadow:0 20px 50px rgba(0,0,0,.35); backdrop-filter:blur(10px);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
     }
-    .label{color:var(--muted);font-size:13px;margin-bottom:8px}
+
+    .label{color:var(--muted);font-size:13px;margin-bottom:8px;font-weight:800}
     .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
     input{
-      padding:12px;border-radius:12px;border:1px solid var(--border);
-      background:rgba(0,0,0,.25);color:var(--text);outline:none;font-size:16px;min-width:170px
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(121,235,251,.25);
+      background:rgba(0,0,0,.20);
+      color:var(--text);
+      outline:none;
+      font-size:16px;
+      min-width:170px
     }
+
     .btn{
-      border:1px solid var(--border);background:rgba(255,255,255,.06);
-      color:var(--text);padding:12px 14px;border-radius:12px;
-      font-size:15px;font-weight:900;cursor:pointer;transition:transform .12s ease,background .12s ease
+      border:1px solid rgba(121,235,251,.22);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:12px;
+      font-size:15px;
+      font-weight:900;
+      cursor:pointer;
+      transition:transform .12s ease, background .12s ease, box-shadow .12s ease;
     }
     .btn:hover{background:rgba(255,255,255,.10)}
     .btn:active{transform:scale(.99)}
-    .btn.primary{border-color:rgba(255,183,3,.35);background:linear-gradient(135deg,var(--brand1),var(--brand2));color:#0a0a0a}
-    .btn.warn{border-color:rgba(251,133,0,.35);background:rgba(251,133,0,.14)}
-    .btn.ok{border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.14)}
+
+    .btn.primary{
+      border-color: rgba(121,235,251,.35);
+      background: linear-gradient(90deg, var(--blue), var(--pink));
+      color:#12081f;
+      box-shadow: 0 18px 60px rgba(121,235,251,.14);
+    }
+
+    .btn.openVote{
+      border-color: rgba(252,25,120,.40);
+      background: rgba(252,25,120,.14);
+    }
+
+    .btn.validate{
+      border-color: rgba(121,235,251,.40);
+      background: rgba(121,235,251,.12);
+    }
+
+    .btn.pause{
+      border-color: rgba(251,211,174,.40);
+      background: rgba(251,211,174,.10);
+    }
+
     pre{
       margin:0;
-      font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
-      font-size:12px;color:rgba(255,255,255,.78);
-      background:rgba(0,0,0,.35);padding:10px;border-radius:14px;border:1px solid rgba(255,255,255,.10);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px;
+      color:rgba(255,255,255,.80);
+      background:rgba(0,0,0,.30);
+      padding:10px;
+      border-radius:14px;
+      border:1px solid rgba(121,235,251,.18);
       white-space:pre-wrap
     }
+
     .qr{
-      width:240px;height:240px;background:#fff;border-radius:16px;padding:10px;border:1px solid rgba(255,255,255,.22)
+      width:240px;
+      height:240px;
+      background:#fff;
+      border-radius:16px;
+      padding:10px;
+      border:1px solid rgba(121,235,251,.35)
     }
-    a{color:rgba(255,255,255,.92);text-decoration:none;border-bottom:1px dashed rgba(255,255,255,.25);word-break:break-all}
+
+    a{
+      color:rgba(255,255,255,.95);
+      text-decoration:none;
+      border-bottom:1px dashed rgba(251,211,174,.35);
+      word-break:break-all
+    }
+
+    .miniBrand{
+      margin-top:14px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(121,235,251,.18);
+      background: rgba(0,0,0,.18);
+      color: rgba(251,211,174,.86);
+      font-weight:800;
+      line-height:1.35;
+    }
+    .miniBrand b{color:var(--blue)}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>DJ Console</h1>
-    <div class="sub">1) Crée une session · 2) Ouvre l’écran vidéoprojecteur · 3) Ouvre/ferme les votes · 4) Valide le gagnant</div>
+    <div class="brandTop">
+      <div>
+        <div class="brandTitle">STARCUP LIVE VOTE</div>
+        <div class="brandSub">Console DJ • module d’animation participative connecté à Starcup</div>
+      </div>
+      <div class="hint">Astuce : ouvre l’écran vidéoprojecteur, puis le public scanne le QR pour voter.</div>
+    </div>
 
     <div class="grid">
       <div class="card">
@@ -79,13 +196,18 @@
 
         <div class="label" style="margin-top:14px;">Contrôle du vote</div>
         <div class="row">
-          <button class="btn warn" id="openVote">Ouvrir un vote (4 choix)</button>
-          <button class="btn ok" id="closeVote">Fermer + valider</button>
-          <button class="btn" id="pauseVote">Pause vote</button>
+          <button class="btn openVote" id="openVote">Ouvrir un vote (4 choix)</button>
+          <button class="btn validate" id="closeVote">Fermer + valider</button>
+          <button class="btn pause" id="pauseVote">Pause vote</button>
         </div>
 
         <div class="label" style="margin-top:14px;">Logs</div>
         <pre id="out">Prêt.</pre>
+
+        <div class="miniBrand">
+          ⭐ <b>Starcup</b> = quiz & blindtests interactifs + modules live (vote, scores, équipes).
+          <br/>Ce module sert de démo “effet waouh” en soirée.
+        </div>
       </div>
 
       <div class="card">
@@ -95,7 +217,7 @@
           <div style="min-width:220px">
             <div class="label">Lien vote</div>
             <a id="voteLink" href="#" target="_blank">—</a>
-            <div class="sub" style="margin-top:10px;">
+            <div class="brandSub" style="margin-top:10px;">
               Le public vote via le QR. L’écran vidéoprojecteur affiche QR + barres en live.
             </div>
           </div>
@@ -131,7 +253,7 @@
 
   roomInput.addEventListener("input", refreshQr);
 
-  // ✅ On ouvre UNIQUEMENT l'écran vidéoprojecteur.
+  // Ouvre UNIQUEMENT l'écran vidéoprojecteur (le public passe par le QR)
   document.getElementById("openProjector").onclick = () => {
     const code = roomInput.value.trim().toUpperCase();
     if (!code) return log("❌ Mets un code session");
@@ -156,7 +278,7 @@
     else log("🏁 Vote FERMÉ — aucun gagnant");
   };
 
-  // ✅ Pause = aucun vote en cours (sans valider)
+  // Pause = aucun vote en cours (sans valider)
   document.getElementById("pauseVote").onclick = async () => {
     const code = roomInput.value.trim().toUpperCase();
     if (!code) return log("❌ Mets un code session");
