@@ -1,125 +1,259 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <title>Starcup Jukebox Live – DJ</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <script src="/socket.io/socket.io.js"></script>
-
+  <meta charset="utf-8" />
+  <title>Starcup Jukebox Live — Console DJ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #210D41;
-      color: #fff;
-      padding: 20px;
+    @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;800;900&display=swap');
+
+    :root{
+      --pink:#FC1978;
+      --blue:#79EBFB;
+      --violet:#8D20C6;
+      --violetDark:#590D7D;
+      --dark:#210D41;
+      --cream:#FBD3AE;
+
+      --text: rgba(255,255,255,.95);
+      --muted: rgba(251,211,174,.82);
+
+      --border: rgba(121,235,251,.22);
+      --glass: rgba(33,13,65,.60);
+      --glass2: rgba(33,13,65,.38);
+      --shadow: 0 22px 70px rgba(0,0,0,.45);
     }
-    h1 {
-      margin-top: 0;
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: Raleway, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(900px 520px at 12% 0%, rgba(121,235,251,.18), transparent 60%),
+        radial-gradient(900px 520px at 88% 8%, rgba(252,25,120,.18), transparent 60%),
+        radial-gradient(1100px 700px at 50% 120%, rgba(141,32,198,.22), transparent 55%),
+        linear-gradient(180deg, var(--dark), #07050f);
+      min-height:100vh;
+      padding:22px;
     }
-    button {
-      padding: 12px 18px;
-      margin: 6px 0;
-      font-size: 16px;
-      cursor: pointer;
+
+    .wrap{max-width:980px;margin:0 auto}
+    .brandTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:16px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
     }
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
+    .brandTitle{
+      font-weight:900;
+      letter-spacing:.8px;
+      color:var(--blue);
+      font-size:22px;
+      line-height:1.1;
     }
-    .box {
-      background: #590D7D;
-      padding: 15px;
-      margin-top: 15px;
-      border-radius: 8px;
+    .brandSub{
+      margin-top:6px;
+      color:var(--muted);
+      font-weight:700;
+      font-size:14px;
     }
-    .code {
-      font-size: 28px;
-      font-weight: bold;
-      letter-spacing: 3px;
+    .hint{
+      color:rgba(255,255,255,.70);
+      font-weight:700;
+      font-size:13px;
+      max-width:520px;
     }
+
+    .grid{
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:16px;
+      margin-top:10px
+    }
+    @media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+    .card{
+      background:linear-gradient(180deg, var(--glass), var(--glass2));
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:16px;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(10px);
+    }
+
+    .label{color:var(--muted);font-size:13px;margin-bottom:8px;font-weight:800}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+    input{
+      padding:12px;
+      border-radius:12px;
+      border:1px solid rgba(121,235,251,.25);
+      background:rgba(0,0,0,.20);
+      color:var(--text);
+      outline:none;
+      font-size:16px;
+      min-width:170px
+    }
+
+    .btn{
+      border:1px solid rgba(121,235,251,.22);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:12px 14px;
+      border-radius:12px;
+      font-size:15px;
+      font-weight:900;
+      cursor:pointer;
+      transition:transform .12s ease, background .12s ease, box-shadow .12s ease;
+    }
+    .btn:hover{background:rgba(255,255,255,.10)}
+    .btn:active{transform:scale(.99)}
+
+    .btn.primary{
+      border-color: rgba(121,235,251,.35);
+      background: linear-gradient(90deg, var(--blue), var(--pink));
+      color:#12081f;
+      box-shadow: 0 18px 60px rgba(121,235,251,.14);
+    }
+
+    .btn.openVote{
+      border-color: rgba(252,25,120,.40);
+      background: rgba(252,25,120,.14);
+    }
+
+    .btn.validate{
+      border-color: rgba(121,235,251,.40);
+      background: rgba(121,235,251,.12);
+    }
+
+    pre{
+      margin:0;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size:12px;
+      color:rgba(255,255,255,.80);
+      background:rgba(0,0,0,.30);
+      padding:10px;
+      border-radius:14px;
+      border:1px solid rgba(121,235,251,.18);
+      white-space:pre-wrap
+    }
+
+    .qr{
+      width:240px;
+      height:240px;
+      background:#fff;
+      border-radius:16px;
+      padding:10px;
+      border:1px solid rgba(121,235,251,.35)
+    }
+
+    a{
+      color:rgba(255,255,255,.95);
+      text-decoration:none;
+      border-bottom:1px dashed rgba(251,211,174,.35);
+      word-break:break-all
+    }
+
+    .miniBrand{
+      margin-top:14px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(121,235,251,.18);
+      background: rgba(0,0,0,.18);
+      color: rgba(251,211,174,.86);
+      font-weight:800;
+      line-height:1.35;
+    }
+    .miniBrand b{color:var(--blue)}
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <div class="brandTop">
+      <div>
+        <div class="brandTitle">STARCUP JUKEBOX LIVE</div>
+        <div class="brandSub">Console DJ • faites voter le public pour le prochain titre</div>
+      </div>
+      <div class="hint">Astuce : ouvre l’écran vidéoprojecteur, puis le public scanne le QR pour voter.</div>
+    </div>
 
-  <h1>🎧 STARCUP JUKEBOX LIVE</h1>
-  <p>L’animation musicale interactive en temps réel</p>
+    <div class="grid">
+      <div class="card">
+        <div class="label">Session</div>
+        <div class="row">
+          <button class="btn primary" id="create">Créer une session</button>
+          <input id="room" placeholder="ex: ABC123" />
+          <button class="btn" id="openProjector">Ouvrir écran vidéoprojecteur</button>
+        </div>
 
-  <button id="createSessionBtn">Créer une session</button>
-  <button id="openScreenBtn" disabled>Ouvrir écran vidéoprojecteur</button>
+        <div class="label" style="margin-top:14px;">Contrôle du vote</div>
+        <div class="row">
+          <button class="btn openVote" id="openVote">Ouvrir un vote (4 choix)</button>
+          <button class="btn validate" id="closeVote">Fermer + valider</button>
+        </div>
 
-  <div class="box">
-    <div>Code session :</div>
-    <div class="code" id="roomCode">—</div>
-  </div>
+        <div class="label" style="margin-top:14px;">Logs</div>
+        <pre id="out">Prêt.</pre>
 
-  <div class="box">
-    <button id="openVoteBtn" disabled>Ouvrir un vote</button>
-    <button id="validateVoteBtn" disabled>Fermer + valider</button>
-  </div>
+        <div class="miniBrand">
+          ⭐ <b>Starcup</b> = quiz & blindtests interactifs + modules live (vote, scores, équipes).
+          <br/>Ce module “Jukebox Live” sert de démo en bar/événementiel.
+        </div>
+      </div>
 
-  <div class="box">
-    <strong>État :</strong>
-    <span id="statusText">Aucune session</span>
+      <div class="card">
+        <div class="label">QR code public (scan pour voter)</div>
+        <div class="row">
+          <img class="qr" id="qr" alt="QR" />
+          <div style="min-width:220px">
+            <div class="label">Lien vote</div>
+            <a id="voteLink" href="#" target="_blank">—</a>
+            <div class="brandSub" style="margin-top:10px;">
+              Le public vote via le QR. L’écran vidéoprojecteur affiche QR + barres en live.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
 <script>
-  const socket = io({
-    transports: ["websocket"]
-  });
+  const out = document.getElementById("out");
+  const roomInput = document.getElementById("room");
+  const qrImg = document.getElementById("qr");
+  const voteLink = document.getElementById("voteLink");
 
-  const createSessionBtn = document.getElementById("createSessionBtn");
-  const openScreenBtn   = document.getElementById("openScreenBtn");
-  const openVoteBtn     = document.getElementById("openVoteBtn");
-  const validateVoteBtn = document.getElementById("validateVoteBtn");
+  function log(msg){ out.textContent = msg; }
 
-  const roomCodeEl = document.getElementById("roomCode");
-  const statusText = document.getElementById("statusText");
+  function refreshQr(){
+    const code = roomInput.value.trim().toUpperCase();
+    if (!code) return;
+    const url = `${location.origin}/vote.html?room=${code}`;
+    voteLink.textContent = url;
+    voteLink.href = url;
+    qrImg.src = `/api/room/${code}/qr?ts=${Date.now()}`;
+  }
 
-  let roomCode = null;
+  document.getElementById("create").onclick = async () => {
+    try{
+      const r = await fetch("/api/room/create", { method: "POST" });
+      const data = await r.json();
+      roomInput.value = data.roomCode;
+      refreshQr();
+      log("✅ Session créée : " + data.roomCode);
+    }catch(e){
+      console.error(e);
+      log("❌ Erreur création session (voir console)");
+    }
+  };
 
-  createSessionBtn.addEventListener("click", () => {
-    socket.emit("create-room");
-  });
+  roomInput.addEventListener("input", refreshQr);
 
-  openScreenBtn.addEventListener("click", () => {
-    if (!roomCode) return;
-    window.open(`/screen.html?room=${roomCode}`, "_blank");
-  });
-
-  openVoteBtn.addEventListener("click", () => {
-    if (!roomCode) return;
-    socket.emit("open-vote", { roomCode });
-  });
-
-  validateVoteBtn.addEventListener("click", () => {
-    if (!roomCode) return;
-    socket.emit("close-vote", { roomCode });
-  });
-
-  socket.on("room-created", (code) => {
-    roomCode = code;
-    roomCodeEl.textContent = code;
-
-    openScreenBtn.disabled = false;
-    openVoteBtn.disabled = false;
-
-    statusText.textContent = "Session créée – aucun vote en cours";
-  });
-
-  socket.on("vote-opened", () => {
-    statusText.textContent = "Vote en cours";
-    validateVoteBtn.disabled = false;
-    openVoteBtn.disabled = true;
-  });
-
-  socket.on("vote-closed", () => {
-    statusText.textContent = "Vote validé";
-    validateVoteBtn.disabled = true;
-    openVoteBtn.disabled = false;
-  });
-
-</script>
-
-</body>
-</html>
+  // Ouvre UNIQUEMENT l'écran vidéoprojecteur (le public passe par le QR)
+  document.getElementById("openProjector").onclick = () => {
+    const code = roomInput.value.trim().toUpperCase();
+    if (!code) return log("❌ Mets un code session");
+    window.open(`${location
