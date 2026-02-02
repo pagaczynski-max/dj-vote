@@ -15,7 +15,7 @@ app.use(express.json());
 
 // Server + Socket.IO
 const server = http.createServer(app);
-const io = new Server(server);
+const io = new Server(server, { transports: ["websocket"] });
 
 // Static files
 app.use(express.static("public"));
@@ -77,7 +77,7 @@ room = {
   voteOpen: false,
   suggestions: [track],
   votes: {trackId: number},
-  voters: Set(voterId),
+  voters: Map(voterId -> trackId),
   roundId: string,
   lastWinner: track|null,
   history: [trackId...]
@@ -99,7 +99,7 @@ function getRoom(roomCode) {
       voteOpen: false,
       suggestions: [],
       votes: {},
-      voters: new Set(),
+      voters: new Map(),
       roundId: nanoid(6),
       lastWinner: null,
       history: [],
@@ -142,7 +142,7 @@ app.post("/api/room/:code/open-vote", (req, res) => {
 
   room.suggestions = pick4(room);
   room.votes = {};
-  room.voters = new Set();
+  room.voters = new Map();
   room.roundId = nanoid(6);
   room.voteOpen = true;
 
@@ -188,7 +188,7 @@ app.post("/api/room/:code/reset", (req, res) => {
   room.voteOpen = false;
   room.suggestions = [];
   room.votes = {};
-  room.voters = new Set();
+  room.voters = new Map();
   room.roundId = nanoid(6);
 
   io.to(roomCode).emit("round_update", publicState(room));
@@ -229,9 +229,23 @@ io.on("connection", (socket) => {
     if (!room.voteOpen) return;
     if (room.roundId !== roundId) return;
     if (!voterId) return;
-    if (room.voters.has(voterId)) return;
 
-    room.voters.add(voterId);
+    // Security/consistency: only allow voting for current suggestions
+    const allowed = new Set((room.suggestions || []).map(t => t.id));
+    if (!allowed.has(trackId)) return;
+
+    const prev = room.voters.get(voterId); // undefined if first vote
+
+    // If user taps same choice again, do nothing
+    if (prev === trackId) return;
+
+    // If changing vote, decrement previous choice
+    if (prev && allowed.has(prev)) {
+      room.votes[prev] = Math.max(0, (room.votes[prev] || 0) - 1);
+    }
+
+    // Record new choice
+    room.voters.set(voterId, trackId);
     room.votes[trackId] = (room.votes[trackId] || 0) + 1;
 
     io.to(roomCode).emit("round_update", publicState(room));
