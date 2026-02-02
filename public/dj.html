@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Starcup Live Vote — Console DJ</title>
+  <title>Starcup Jukebox Live — Console DJ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;800;900&display=swap');
@@ -179,7 +179,7 @@
   <div class="wrap">
     <div class="brandTop">
       <div>
-        <div class="brandTitle">STARCUP LIVE VOTE</div>
+        <div class="brandTitle">STARCUP JUKEBOX LIVE</div>
         <div class="brandSub">Console DJ • module d’animation participative connecté à Starcup</div>
       </div>
       <div class="hint">Astuce : ouvre l’écran vidéoprojecteur, puis le public scanne le QR pour voter.</div>
@@ -198,7 +198,6 @@
         <div class="row">
           <button class="btn openVote" id="openVote">Ouvrir un vote (4 choix)</button>
           <button class="btn validate" id="closeVote">Fermer + valider</button>
-          <button class="btn pause" id="pauseVote">Pause vote</button>
         </div>
 
         <div class="label" style="margin-top:14px;">Logs</div>
@@ -279,8 +278,6 @@
   };
 
   // Pause = aucun vote en cours (sans valider)
-  document.getElementById("pauseVote").onclick = async () => {
-    const code = roomInput.value.trim().toUpperCase();
     if (!code) return log("❌ Mets un code session");
     await fetch(`/api/room/${code}/reset`, { method: "POST" });
     log("⏸️ Pause vote — aucun vote en cours");
