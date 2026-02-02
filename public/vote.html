@@ -2,210 +2,153 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Starcup Jukebox Live — Vote</title>
+  <title>STARCUP JUKEBOX LIVE — Vote</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/styles.css" />
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/client.js"></script>
+
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;800;900&display=swap');
-
-    :root{
-      --pink:#FC1978;
-      --blue:#79EBFB;
-      --violet:#8D20C6;
-      --violetDark:#590D7D;
-      --dark:#210D41;
-      --cream:#FBD3AE;
-
-      --text: rgba(255,255,255,.95);
-      --muted: rgba(251,211,174,.82);
-
-      --border: rgba(121,235,251,.22);
-      --glass: rgba(33,13,65,.55);
-      --glass2: rgba(33,13,65,.35);
+    .mobileWrap{ max-width:540px; margin:0 auto; }
+    .hero{
+      padding:16px;
+      border-radius:18px;
+      border:1px solid rgba(121,235,251,.18);
+      background: rgba(0,0,0,.18);
     }
-
-    *{box-sizing:border-box}
-    body{
+    .heroTitle{
+      font-weight:900;
+      font-size:18px;
       margin:0;
-      font-family: Raleway, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(700px 420px at 50% -10%, rgba(121,235,251,.18), transparent 60%),
-        radial-gradient(700px 420px at 85% 0%, rgba(252,25,120,.18), transparent 60%),
-        linear-gradient(180deg, var(--dark), #07050f);
-      min-height:100vh;
-      padding:18px 14px;
+    }
+    .heroSub{
+      margin-top:8px;
+      margin-bottom:0;
+      color: rgba(251,211,174,.85);
+      font-weight:800;
     }
 
-    .wrap{max-width:760px;margin:0 auto}
-    h1{margin:10px 0 6px;font-size:26px;font-weight:900;letter-spacing:.3px;color:var(--blue)}
-    .info{color:var(--muted);font-size:14px;margin-bottom:12px;font-weight:800}
+    .choices{ display:flex; flex-direction:column; gap:12px; margin-top:14px; }
 
-    .panel{
-      background: linear-gradient(180deg, var(--glass), var(--glass2));
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:14px;
-      box-shadow:0 18px 55px rgba(0,0,0,.45);
-      backdrop-filter:blur(10px);
-    }
-
-    .btn{
+    .choiceBtn{
       width:100%;
-      border-radius:18px;
-      border:1px solid rgba(121,235,251,.22);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      padding:16px 14px;
-      margin:12px 0;
-      cursor:pointer;
       text-align:left;
-      transition:transform .12s ease, background .12s ease, border-color .12s ease;
-    }
-    .btn:hover{background:rgba(255,255,255,.06)}
-    .btn:active{transform:scale(.99)}
-    .btn:focus{outline:none}
-    .btn:focus-visible{outline:3px solid rgba(121,235,251,.55); outline-offset:2px}
-
-
-    .title{font-size:18px;font-weight:900;line-height:1.2}
-    .artist{margin-top:4px;color:var(--muted);font-size:14px;font-weight:800}
-
-    .toast{
-      position: sticky;
-      top: 10px;
-      background: linear-gradient(90deg, var(--blue), var(--pink));
-      color:#12081f;
-      padding:10px 12px;
-      border-radius:999px;
+      padding:14px 14px;
+      border-radius:16px;
+      border:1px solid rgba(121,235,251,.20);
+      background: rgba(255,255,255,.08);
+      color: rgba(255,255,255,.94);
       font-weight:900;
-      display:none;
-      box-shadow:0 18px 55px rgba(121,235,251,.14);
-      margin-bottom:10px;
-      text-align:center;
+      font-size:16px;
+      cursor:pointer;
+    }
+    .choiceBtn .artist{
+      display:block;
+      margin-top:6px;
+      font-size:13px;
+      color: rgba(251,211,174,.85);
+      font-weight:800;
     }
 
-    .empty{
-      color: var(--muted);
-      font-weight: 900;
-      text-align:center;
-      padding: 18px 10px;
-      font-size: 16px;
+    .choiceBtn.selected{
+      border-color: rgba(252,25,120,.45);
+      background: linear-gradient(90deg, rgba(121,235,251,.14), rgba(252,25,120,.14));
+      box-shadow: 0 18px 60px rgba(252,25,120,.10);
     }
 
-    .footerBrand{
-      text-align:center;
-      margin-top:14px;
-      color:var(--muted);
+    .choiceBtn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+
+    .info{
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(121,235,251,.18);
+      background: rgba(0,0,0,.18);
       font-weight:900;
-      letter-spacing:.2px;
+      color: rgba(255,255,255,.88);
     }
   </style>
 </head>
-<body>
-  <div class="wrap">
-    <div class="toast" id="toast">✅ Vote enregistré — Starcup Jukebox Live</div>
-    <h1>Choisis le prochain titre</h1>
-    <div class="info" id="info"></div>
 
-    <div class="panel">
-      <div id="content"></div>
+<body>
+  <div class="mobileWrap">
+    <div class="topbar">
+      <div>
+        <div class="brandTitle">STARCUP JUKEBOX LIVE</div>
+        <div class="brandSub">⭐ Expérience Starcup</div>
+      </div>
+      <div class="hint" id="roomBadge">Room —</div>
     </div>
 
-    <div class="footerBrand">⭐ Expérience Starcup</div>
+    <div class="hero">
+      <p class="heroTitle">Vote pour le prochain titre</p>
+      <p class="heroSub" id="subtitle">Connexion…</p>
+    </div>
+
+    <div class="choices" id="choices"></div>
+    <div class="info" id="info">En attente…</div>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const params = new URLSearchParams(location.search);
-    const roomCode = (params.get("room") || "").toUpperCase();
-    const info = document.getElementById("info");
-    const content = document.getElementById("content");
-    const toast = document.getElementById("toast");
+<script>
+  const roomCode = (qs("room") || "").toUpperCase();
+  const roomBadge = document.getElementById("roomBadge");
+  const subtitle = document.getElementById("subtitle");
+  const choicesEl = document.getElementById("choices");
+  const infoEl = document.getElementById("info");
 
-    if (!roomCode) info.textContent = "❌ Room manquante. Le lien doit finir par ?room=ABC123";
-    else info.textContent = "Room : " + roomCode;
+  if (!roomCode) {
+    subtitle.textContent = "❌ Room manquante. Scanne le QR sur l’écran.";
+  } else {
+    roomBadge.textContent = "Room " + roomCode;
+  }
 
-    let voterId = localStorage.getItem("voterId");
-    if (!voterId) {
-      voterId = Math.random().toString(16).slice(2) + Date.now().toString(16);
-      localStorage.setItem("voterId", voterId);
+  const voterId = getOrCreateVoterId();
+  const socket = io({ transports: ["websocket"] });
+
+  let currentRoundId = null;
+  let voteOpen = false;
+  let selectedTrackId = null;
+  let lastWinner = null;
+
+  function setInfo(text){ infoEl.textContent = text; }
+
+  function renderChoices(suggestions){
+    choicesEl.innerHTML = "";
+
+    if (!Array.isArray(suggestions) || suggestions.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "info";
+      empty.textContent = "Aucun vote en cours. Attends l’ouverture du vote.";
+      choicesEl.appendChild(empty);
+      return;
     }
 
-    const socket = io({ transports: ["websocket"] });
-    let currentRoundId = null;
-    let selectedTrackId = null;
+    for (const t of suggestions) {
+      const btn = document.createElement("button");
+      btn.className = "choiceBtn" + (t.id === selectedTrackId ? " selected" : "");
+      btn.disabled = !voteOpen;
+      btn.type = "button";
 
-    socket.emit("join", { roomCode });
+      btn.innerHTML = `${t.title}<span class="artist">${t.artist}</span>`;
 
-    function showToast(){
-      toast.style.display = "block";
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => toast.style.display = "none", 1300);
-    }
+      btn.addEventListener("click", () => {
+        if (!voteOpen || !currentRoundId) return;
 
-    socket.on("round_update", (state) => {
-      currentRoundId = state.roundId;
+        selectedTrackId = t.id;
+        renderChoices(suggestions);
 
-      // récupère la sélection de CE round (si déjà voté)
-      selectedTrackId = localStorage.getItem("selectedTrackId_" + currentRoundId);
+        socket.emit("vote", {
+          roomCode,
+          roundId: currentRoundId,
+          trackId: t.id,
+          voterId
+        });
 
-      if (!state.voteOpen) {
-        // vote fermé -> on nettoie le choix stocké de ce round
-        if (currentRoundId) localStorage.removeItem("selectedTrackId_" + currentRoundId);
-        content.innerHTML = `<div class="empty">Aucun vote en cours…</div>`;
-        return;
-      }
+        setInfo("✅ Vote enregistré ⭐ (tu peux changer)");
+        blurActiveSoon();
+      });
 
-      const suggestions = state.suggestions || [];
-      content.innerHTML = "";
-
-      for (const t of suggestions) {
-        const b = document.createElement("button");
-        b.className = "btn";
-        b.innerHTML = `
-          <div class="title">${escapeHtml(t.title)}</div>
-          <div class="artist">${escapeHtml(t.artist)}</div>
-        `;
-
-        // surbrillance si déjà voté pour ce titre
-        if (selectedTrackId === t.id) {
-          b.style.borderColor = "#FC1978";
-          b.style.background = "rgba(252,25,120,.16)";
-        }
-
-        b.onclick = () => {
-          socket.emit("vote", {
-            roomCode,
-            roundId: currentRoundId,
-            trackId: t.id,
-            voterId
-          });
-
-          // stocke le choix du joueur pour garder la surbrillance
-          selectedTrackId = t.id;
-          localStorage.setItem("selectedTrackId_" + currentRoundId, selectedTrackId);
-
-          // refresh UI immédiat
-          for (const el of content.querySelectorAll(".btn")) {
-            el.style.borderColor = "rgba(121,235,251,.22)";
-            el.style.background = "rgba(0,0,0,.18)";
-          }
-          b.style.borderColor = "#FC1978";
-          b.style.background = "rgba(252,25,120,.16)";
-
-          showToast();
-          b.blur();
-        };
-
-        content.appendChild(b);
-      }
-    });
-
-    function escapeHtml(s){
-      return String(s).replace(/[&<>"']/g, c => ({
-        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-      }[c]));
-    }
-  </script>
-</body>
-</html>
+      choicesEl.appendChild(
