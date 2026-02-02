@@ -2,78 +2,113 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <title>Vote</title>
+  <title>Starcup Live Vote — Vote</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;800;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;800;900&display=swap');
+
     :root{
-      --bg0:#06070a; --bg1:#0b1020;
-      --card:rgba(255,255,255,.06);
-      --border:rgba(255,255,255,.14);
-      --text:rgba(255,255,255,.92); --muted:rgba(255,255,255,.65);
-      --brand1:#ffb703; --brand2:#fb8500;
+      --pink:#FC1978;
+      --blue:#79EBFB;
+      --violet:#8D20C6;
+      --violetDark:#590D7D;
+      --dark:#210D41;
+      --cream:#FBD3AE;
+
+      --text: rgba(255,255,255,.95);
+      --muted: rgba(251,211,174,.82);
+
+      --border: rgba(121,235,251,.22);
+      --glass: rgba(33,13,65,.55);
+      --glass2: rgba(33,13,65,.35);
     }
+
     *{box-sizing:border-box}
     body{
-      margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      margin:0;
+      font-family: Raleway, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       color:var(--text);
-      background: radial-gradient(700px 380px at 50% -10%, rgba(255,183,3,.20), transparent 55%),
-                  linear-gradient(180deg, var(--bg1), var(--bg0));
-      min-height:100vh; padding:18px 14px;
+      background:
+        radial-gradient(700px 420px at 50% -10%, rgba(121,235,251,.18), transparent 60%),
+        radial-gradient(700px 420px at 85% 0%, rgba(252,25,120,.18), transparent 60%),
+        linear-gradient(180deg, var(--dark), #07050f);
+      min-height:100vh;
+      padding:18px 14px;
     }
+
     .wrap{max-width:760px;margin:0 auto}
-    h1{margin:10px 0 6px;font-size:26px;font-weight:900}
-    .info{color:var(--muted);font-size:14px;margin-bottom:12px}
+    h1{margin:10px 0 6px;font-size:26px;font-weight:900;letter-spacing:.3px;color:var(--blue)}
+    .info{color:var(--muted);font-size:14px;margin-bottom:12px;font-weight:800}
+
     .panel{
-      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+      background: linear-gradient(180deg, var(--glass), var(--glass2));
       border:1px solid var(--border);
-      border-radius:18px;padding:14px;
-      box-shadow:0 18px 45px rgba(0,0,0,.35);
+      border-radius:18px;
+      padding:14px;
+      box-shadow:0 18px 55px rgba(0,0,0,.45);
       backdrop-filter:blur(10px);
     }
+
     .btn{
       width:100%;
       border-radius:18px;
-      border:1px solid rgba(255,255,255,.16);
-      background:rgba(0,0,0,.20);
+      border:1px solid rgba(121,235,251,.22);
+      background:rgba(0,0,0,.18);
       color:var(--text);
       padding:16px 14px;
       margin:12px 0;
-      cursor:pointer;text-align:left;
+      cursor:pointer;
+      text-align:left;
       transition:transform .12s ease, background .12s ease, border-color .12s ease;
     }
-    .btn:hover{background:rgba(255,255,255,.07)}
+    .btn:hover{background:rgba(255,255,255,.06)}
     .btn:active{transform:scale(.99)}
+
     .title{font-size:18px;font-weight:900;line-height:1.2}
     .artist{margin-top:4px;color:var(--muted);font-size:14px;font-weight:800}
+
     .toast{
-      position: sticky; top: 10px;
-      background: linear-gradient(135deg, var(--brand1), var(--brand2));
-      color:#0a0a0a;
+      position: sticky;
+      top: 10px;
+      background: linear-gradient(90deg, var(--blue), var(--pink));
+      color:#12081f;
       padding:10px 12px;
       border-radius:999px;
       font-weight:900;
       display:none;
-      box-shadow:0 18px 45px rgba(251,133,0,.28);
+      box-shadow:0 18px 55px rgba(121,235,251,.14);
       margin-bottom:10px;
+      text-align:center;
     }
+
     .empty{
       color: var(--muted);
-      font-weight: 800;
+      font-weight: 900;
       text-align:center;
       padding: 18px 10px;
+      font-size: 16px;
+    }
+
+    .footerBrand{
+      text-align:center;
+      margin-top:14px;
+      color:var(--muted);
+      font-weight:900;
+      letter-spacing:.2px;
     }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <div class="toast" id="toast">Vote pris en compte ✅</div>
+    <div class="toast" id="toast">✅ Merci pour ton vote — Starcup Live Vote</div>
     <h1>Vote pour le prochain son</h1>
     <div class="info" id="info"></div>
 
     <div class="panel">
       <div id="content"></div>
     </div>
+
+    <div class="footerBrand">⭐ Expérience Starcup</div>
   </div>
 
   <script src="/socket.io/socket.io.js"></script>
@@ -95,19 +130,25 @@
 
     const socket = io();
     let currentRoundId = null;
+    let selectedTrackId = null;
 
     socket.emit("join", { roomCode });
 
     function showToast(){
       toast.style.display = "block";
       clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => toast.style.display = "none", 1200);
+      showToast._t = setTimeout(() => toast.style.display = "none", 1300);
     }
 
     socket.on("round_update", (state) => {
       currentRoundId = state.roundId;
 
+      // récupère la sélection de CE round (si déjà voté)
+      selectedTrackId = localStorage.getItem("selectedTrackId_" + currentRoundId);
+
       if (!state.voteOpen) {
+        // vote fermé -> on nettoie le choix stocké de ce round
+        if (currentRoundId) localStorage.removeItem("selectedTrackId_" + currentRoundId);
         content.innerHTML = `<div class="empty">Aucun vote en cours…</div>`;
         return;
       }
@@ -122,6 +163,13 @@
           <div class="title">${escapeHtml(t.title)}</div>
           <div class="artist">${escapeHtml(t.artist)}</div>
         `;
+
+        // surbrillance si déjà voté pour ce titre
+        if (selectedTrackId === t.id) {
+          b.style.borderColor = "#FC1978";
+          b.style.background = "rgba(252,25,120,.16)";
+        }
+
         b.onclick = () => {
           socket.emit("vote", {
             roomCode,
@@ -129,8 +177,22 @@
             trackId: t.id,
             voterId
           });
+
+          // stocke le choix du joueur pour garder la surbrillance
+          selectedTrackId = t.id;
+          localStorage.setItem("selectedTrackId_" + currentRoundId, selectedTrackId);
+
+          // refresh UI immédiat
+          for (const el of content.querySelectorAll(".btn")) {
+            el.style.borderColor = "rgba(121,235,251,.22)";
+            el.style.background = "rgba(0,0,0,.18)";
+          }
+          b.style.borderColor = "#FC1978";
+          b.style.background = "rgba(252,25,120,.16)";
+
           showToast();
         };
+
         content.appendChild(b);
       }
     });
