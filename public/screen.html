@@ -17,21 +17,6 @@
     }
     @media(max-width:980px){ .screenGrid{ grid-template-columns:1fr } }
 
-    .bigTitle{
-      font-size:34px;
-      font-weight:900;
-      letter-spacing:.6px;
-      margin:0;
-      text-transform:uppercase;
-      color: var(--blue);
-    }
-    .bigSub{
-      margin-top:8px;
-      margin-bottom:0;
-      color: var(--muted);
-      font-weight:800;
-    }
-
     .status{
       margin-top:12px;
       padding:12px;
@@ -66,10 +51,7 @@
       z-index:2;
     }
 
-    .trackName{
-      font-weight:900;
-      font-size:18px;
-    }
+    .trackName{ font-weight:900; font-size:18px; }
     .trackArtist{
       font-weight:800;
       font-size:13px;
@@ -82,13 +64,15 @@
       white-space:nowrap;
     }
 
+    /* ✅ Transition visible */
     .fill{
       position:absolute;
       left:0; top:0; bottom:0;
       width:0%;
       background: linear-gradient(90deg, rgba(121,235,251,.22), rgba(252,25,120,.22));
       z-index:1;
-      transition: width .18s ease;
+      transition: width .35s ease;
+      will-change: width;
     }
 
     .winnerBox{
@@ -169,48 +153,25 @@
 
   const socket = io({ transports: ["websocket"] });
 
-  let lastState = null;
+  // On garde les "fill" existants pour pouvoir animer par update sans tout recréer
+  const fillByTrackId = new Map();
+  const rowByTrackId = new Map();
+  const countByTrackId = new Map();
 
-  function render(state) {
-    lastState = state;
-
-    const total = sumVotes(state.votes);
-    votesCountEl.textContent = `${total} vote${total>1?"s":""} en direct`;
-
-    const hasVote = !!state.voteOpen;
-    const hasSuggestions = Array.isArray(state.suggestions) && state.suggestions.length > 0;
-
-    if (!hasVote) {
-      statusEl.textContent = hasSuggestions ? "Vote terminé" : "Aucun vote en cours";
-    } else {
-      statusEl.textContent = "Vote en cours";
-    }
-
-    const lead = leaderId(state.suggestions, state.votes);
-
+  function ensureRows(suggestions) {
+    // Reset si nouvelle liste (nouveau vote)
     barsEl.innerHTML = "";
-    if (!hasSuggestions) {
-      const empty = document.createElement("div");
-      empty.className = "status";
-      empty.textContent = "En attente d’un vote…";
-      barsEl.appendChild(empty);
-      return;
-    }
+    fillByTrackId.clear();
+    rowByTrackId.clear();
+    countByTrackId.clear();
 
-    // Max pour calcul barres (si 0 votes -> 1 pour éviter division 0)
-    let max = 1;
-    for (const t of state.suggestions) max = Math.max(max, state.votes[t.id] || 0);
-
-    for (const t of state.suggestions) {
-      const c = state.votes[t.id] || 0;
-      const pct = Math.round((c / max) * 100);
-
+    for (const t of suggestions) {
       const row = document.createElement("div");
-      row.className = "barRow" + (t.id === lead && total > 0 ? " leader" : "");
+      row.className = "barRow";
 
       const fill = document.createElement("div");
       fill.className = "fill";
-      fill.style.width = `${pct}%`;
+      fill.style.width = "0%"; // ✅ départ à 0
       row.appendChild(fill);
 
       const top = document.createElement("div");
@@ -230,16 +191,92 @@
 
       const right = document.createElement("div");
       right.className = "count";
-      right.textContent = `${c}`;
+      right.textContent = "0";
 
       top.appendChild(left);
       top.appendChild(right);
 
       row.appendChild(top);
       barsEl.appendChild(row);
+
+      fillByTrackId.set(t.id, fill);
+      rowByTrackId.set(t.id, row);
+      countByTrackId.set(t.id, right);
     }
 
-    // Dé-focalise tout (évite un encadré “random”)
+    // ✅ Force le navigateur à prendre en compte le 0% avant de passer au %
+    requestAnimationFrame(() => {});
+  }
+
+  let lastSuggestionsKey = "";
+
+  function render(state) {
+    const total = sumVotes(state.votes);
+    votesCountEl.textContent = `${total} vote${total>1?"s":""} en direct`;
+
+    const hasVote = !!state.voteOpen;
+    const hasSuggestions = Array.isArray(state.suggestions) && state.suggestions.length > 0;
+
+    if (!hasVote) {
+      statusEl.textContent = hasSuggestions ? "Vote terminé" : "Aucun vote en cours";
+    } else {
+      statusEl.textContent = "Vote en cours";
+    }
+
+    if (!hasSuggestions) {
+      barsEl.innerHTML = "";
+      const empty = document.createElement("div");
+      empty.className = "status";
+      empty.textContent = "En attente d’un vote…";
+      barsEl.appendChild(empty);
+      winnerBox.style.display = "none";
+      return;
+    }
+
+    const key = state.suggestions.map(t => t.id).join("|");
+    if (key !== lastSuggestionsKey) {
+      lastSuggestionsKey = key;
+      ensureRows(state.suggestions);
+    }
+
+    // Max votes pour calcul % (si 0 -> 1)
+    let max = 1;
+    for (const t of state.suggestions) max = Math.max(max, state.votes[t.id] || 0);
+
+    const lead = leaderId(state.suggestions, state.votes);
+
+    for (const t of state.suggestions) {
+      const c = state.votes[t.id] || 0;
+      const pct = Math.round((c / max) * 100);
+
+      const fill = fillByTrackId.get(t.id);
+      const row = rowByTrackId.get(t.id);
+      const count = countByTrackId.get(t.id);
+
+      if (count) count.textContent = String(c);
+
+      if (row) {
+        // leader seulement si >0 vote total
+        if (t.id === lead && total > 0) row.classList.add("leader");
+        else row.classList.remove("leader");
+      }
+
+      if (fill) {
+        // ✅ animation progressive garantie
+        requestAnimationFrame(() => {
+          fill.style.width = `${pct}%`;
+        });
+      }
+    }
+
+    if (!state.voteOpen && state.lastWinner) {
+      winnerBox.style.display = "block";
+      winnerName.textContent = `${state.lastWinner.title} — ${state.lastWinner.artist}`;
+    } else {
+      winnerBox.style.display = "none";
+      winnerName.textContent = "";
+    }
+
     blurActiveSoon();
   }
 
@@ -248,19 +285,7 @@
     socket.emit("join", { roomCode });
   });
 
-  socket.on("round_update", (state) => {
-    render(state);
-
-    // Gagnant visible seulement si vote fermé ET lastWinner présent
-    if (!state.voteOpen && state.lastWinner) {
-      winnerBox.style.display = "block";
-      winnerName.textContent = `${state.lastWinner.title} — ${state.lastWinner.artist}`;
-    } else {
-      winnerBox.style.display = "none";
-      winnerName.textContent = "";
-    }
-  });
-
+  socket.on("round_update", (state) => render(state));
   socket.on("validated", ({ winner }) => {
     if (winner) {
       winnerBox.style.display = "block";
@@ -268,7 +293,6 @@
     }
   });
 
-  // Cas “aucun vote en cours” au premier chargement
   blurActiveSoon();
 </script>
 </body>
