@@ -66,7 +66,7 @@
 <body>
   <div class="wrap">
     <h1>DJ Console</h1>
-    <div class="sub">Créer une session, projeter l’écran, ouvrir/fermer les votes, valider le gagnant.</div>
+    <div class="sub">1) Crée une session · 2) Ouvre l’écran vidéoprojecteur · 3) Ouvre/ferme les votes · 4) Valide le gagnant</div>
 
     <div class="grid">
       <div class="card">
@@ -74,14 +74,14 @@
         <div class="row">
           <button class="btn primary" id="create">Créer une session</button>
           <input id="room" placeholder="ex: ABC123" />
-          <button class="btn" id="openWindows">Ouvrir Vote + Écran</button>
+          <button class="btn" id="openProjector">Ouvrir écran vidéoprojecteur</button>
         </div>
 
         <div class="label" style="margin-top:14px;">Contrôle du vote</div>
         <div class="row">
           <button class="btn warn" id="openVote">Ouvrir un vote (4 choix)</button>
           <button class="btn ok" id="closeVote">Fermer + valider</button>
-          <button class="btn" id="reset">Aucun vote en cours</button>
+          <button class="btn" id="pauseVote">Pause vote</button>
         </div>
 
         <div class="label" style="margin-top:14px;">Logs</div>
@@ -89,13 +89,15 @@
       </div>
 
       <div class="card">
-        <div class="label">QR code public</div>
+        <div class="label">QR code public (scan pour voter)</div>
         <div class="row">
           <img class="qr" id="qr" alt="QR" />
           <div style="min-width:220px">
             <div class="label">Lien vote</div>
             <a id="voteLink" href="#" target="_blank">—</a>
-            <div class="sub" style="margin-top:10px;">Projette <b>screen.html</b> au vidéoprojecteur : QR + barres en live.</div>
+            <div class="sub" style="margin-top:10px;">
+              Le public vote via le QR. L’écran vidéoprojecteur affiche QR + barres en live.
+            </div>
           </div>
         </div>
       </div>
@@ -103,10 +105,10 @@
   </div>
 
 <script>
-  const out = .getElementById("out");
-  const roomInput = .getElementById("room");
-  const qrImg = .getElementById("qr");
-  const voteLink = .getElementById("voteLink");
+  const out = document.getElementById("out");
+  const roomInput = document.getElementById("room");
+  const qrImg = document.getElementById("qr");
+  const voteLink = document.getElementById("voteLink");
 
   function log(msg){ out.textContent = msg; }
 
@@ -129,17 +131,14 @@
 
   roomInput.addEventListener("input", refreshQr);
 
-document.getElementById("openWindows").onclick = () => {
-  const code = roomInput.value.trim().toUpperCase();
-  if (!code) return log("❌ Mets un code session");
-
-  // On n'ouvre QUE l'écran vidéoprojecteur.
-  // Le public ira sur vote.html via le QR.
-  window.open(`${location.origin}/screen.html?room=${code}`, "_blank");
-
-  refreshQr();
-  log("📽️ Écran vidéoprojecteur ouvert (le public scanne le QR)");
-};
+  // ✅ On ouvre UNIQUEMENT l'écran vidéoprojecteur.
+  document.getElementById("openProjector").onclick = () => {
+    const code = roomInput.value.trim().toUpperCase();
+    if (!code) return log("❌ Mets un code session");
+    window.open(`${location.origin}/screen.html?room=${code}`, "_blank");
+    refreshQr();
+    log("📽️ Écran vidéoprojecteur ouvert (le public scanne le QR)");
+  };
 
   document.getElementById("openVote").onclick = async () => {
     const code = roomInput.value.trim().toUpperCase();
@@ -154,16 +153,16 @@ document.getElementById("openWindows").onclick = () => {
     const r = await fetch(`/api/room/${code}/close-vote`, { method: "POST" });
     const data = await r.json();
     if (data.winner) log("🏆 Vote FERMÉ — gagnant : " + data.winner.title + " — " + data.winner.artist);
-    else log("🏁 Vote FERMÉ — aucun gagnant (pas de vote)");
+    else log("🏁 Vote FERMÉ — aucun gagnant");
   };
 
-  document.getElementById("reset").onclick = async () => {
+  // ✅ Pause = aucun vote en cours (sans valider)
+  document.getElementById("pauseVote").onclick = async () => {
     const code = roomInput.value.trim().toUpperCase();
     if (!code) return log("❌ Mets un code session");
     await fetch(`/api/room/${code}/reset`, { method: "POST" });
-    log("⏸️ Aucun vote en cours");
+    log("⏸️ Pause vote — aucun vote en cours");
   };
 </script>
 </body>
 </html>
-
